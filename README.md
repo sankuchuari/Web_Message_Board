@@ -6,5 +6,7 @@
 
 3.支持通过Web浏览器访问留言板
 
+4.可通过Edge/Chrome浏览器安装PWA应用至桌面
+
 ## 界面
 ![image](https://github.com/user-attachments/assets/6abcd0d3-e673-4b85-9c2b-5cea6640db06)
