@@ -1,0 +1,17 @@
+[package]
+name = "Web"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+actix-web = "4"
+maud = "0.25"
+serde = { version = "1", features = ["derive"] }
+pulldown-cmark = "0.10"
+sqlx = { version = "0.7", features = ["runtime-tokio", "sqlite", "macros"] }
+tokio = { version = "1", features = ["full"] }
+futures-util = "0.3.31"
+uuid = { version = "1.16.0", features = ["v4"] }
+actix-multipart = "0.4"
+actix-files = "0.6"
+sanitize-filename = "0.5"
