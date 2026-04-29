@@ -312,11 +312,11 @@ async fn main() -> io::Result<()> {
     sqlx::query(r#"CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, message TEXT NOT NULL, image_path TEXT, video_path TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)"#)
         .execute(&db).await.expect("建表失败");
 
-    println!("🚀 Server ready at http://localhost:80");
+    println!("🚀 Server ready at http://localhost:6790");
     HttpServer::new(move || {
         App::new().app_data(web::Data::new(db.clone()))
             .service(index).service(post_message).service(delete_message)
             .service(Files::new("/uploads", "uploads").show_files_listing())
             .service(Files::new("/static", "static"))
-    }).bind("0.0.0.0:80")?.run().await
+    }).bind("0.0.0.0:6790")?.run().await
 }
