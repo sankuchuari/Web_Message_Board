@@ -1,12 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="guestbook.db" uuid="88501cb8-f1da-4ba0-aab2-de34afcbbe8b">
+    <data-source source="LOCAL" name="guestbook.db" uuid="d02bb95f-315d-4b99-9f57-532bf3a5d555">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
-      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/guestbook.db</jdbc-url>
+      <jdbc-url>jdbc:sqlite:guestbook.db</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
+      <driver-properties>
+        <property name="id" />
+        <property name="name" />
+        <property name="message" />
+        <property name="image_path" />
+        <property name="video_path" />
+      </driver-properties>
     </data-source>
   </component>
 </project>
