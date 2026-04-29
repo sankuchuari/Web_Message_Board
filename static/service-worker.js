@@ -6,20 +6,20 @@ const urlsToCache = [
     "/static/back_image.png",
     "/static/icons/icon-192x192.png",
     "/static/icons/icon-512x512.png",
-    // ¿ÉÒÔ¼ÌÐø¼Ó css¡¢js ×ÊÔ´
+    // ï¿½ï¿½ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½ï¿½ cssï¿½ï¿½js ï¿½ï¿½Ô´
 ];
 
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/static/service-worker.js')
         .then(reg => {
-            console.log('Service Worker ×¢²á³É¹¦');
+            console.log('Service Worker ×¢ï¿½ï¿½É¹ï¿½');
         })
         .catch(err => {
-            console.error('Service Worker ×¢²áÊ§°Ü', err);
+            console.error('Service Worker ×¢ï¿½ï¿½Ê§ï¿½ï¿½', err);
         });
 }
 
-// °²×°Ê±»º´æ
+// ï¿½ï¿½×°Ê±ï¿½ï¿½ï¿½ï¿½
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open('v1').then((cache) => {
@@ -33,7 +33,7 @@ self.addEventListener('install', (event) => {
     );
 });
 
-// À¹½ØÇëÇó£¬Ê¹ÓÃ»º´æ
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½Ã»ï¿½ï¿½ï¿½
 self.addEventListener('fetch', (event) => {
     event.respondWith(
         caches.match(event.request).then((response) => {
@@ -42,7 +42,7 @@ self.addEventListener('fetch', (event) => {
     );
 });
 
-// ¸üÐÂÊ±Çå³ý¾É»º´æ
+// ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½É»ï¿½ï¿½ï¿½
 self.addEventListener('activate', event => {
     event.waitUntil(
         caches.keys().then(cacheNames => {
