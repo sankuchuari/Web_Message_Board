@@ -71,21 +71,21 @@ http://localhost:6790
 ## 📁 项目结构
 
 .
-├── main.rs
-├── Cargo.toml
-├── guestbook.db
-│
-├── static/
-│   ├── back_image.png
-│   ├── manifest.json
-│   ├── sw.js
-│   ├── icon-64x64.ico
-│   │
-│   └── icons/
-│       ├── icon-192x192.png
-│       └── icon-512x512.png
-│
-└── uploads/
+├── main.rs  
+├── Cargo.toml  
+├── guestbook.db  
+│  
+├── static/  
+│   ├── back_image.png  
+│   ├── manifest.json  
+│   ├── sw.js  
+│   ├── icon-64x64.ico  
+│   │  
+│   └── icons/  
+│       ├── icon-192x192.png  
+│       └── icon-512x512.png  
+│  
+└── uploads/  
 
 ---
 
