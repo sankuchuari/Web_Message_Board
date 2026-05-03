@@ -1,4 +1,5 @@
-use actix_web::{web, App, HttpServer, Responder, HttpResponse, get, post};
+use actix_web::{web, App, HttpServer, Responder, HttpResponse, get, post, cookie::Key};
+use actix_session::{Session, SessionMiddleware, storage::CookieSessionStore};
 use actix_multipart::Multipart;
 use actix_files::Files;
 use maud::{html, DOCTYPE, PreEscaped};
@@ -8,7 +9,9 @@ use futures_util::TryStreamExt as _;
 use uuid::Uuid;
 use sanitize_filename::sanitize;
 use std::{fs, io::Write, path::Path, io};
+use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier, password_hash::SaltString};
 
+// --- 数据结构 ---
 struct StoredMessage {
     id: i64,
     name: String,
@@ -18,6 +21,12 @@ struct StoredMessage {
     created_at: String,
 }
 
+#[derive(serde::Deserialize)]
+struct AuthForm {
+    username: String,
+    password: String,
+}
+
 fn markdown_to_html(input: &str) -> String {
     let mut html_output = String::new();
     let parser = Parser::new_ext(input, Options::all());
@@ -25,8 +34,51 @@ fn markdown_to_html(input: &str) -> String {
     html_output
 }
 
+// --- 账户验证处理 ---
+
+#[post("/register")]
+async fn register_handler(db: web::Data<SqlitePool>, form: web::Form<AuthForm>) -> impl Responder {
+    let salt = SaltString::generate(&mut argon2::password_hash::rand_core::OsRng);
+    let argon2 = Argon2::default();
+    let password_hash = argon2.hash_password(form.password.as_bytes(), &salt).unwrap().to_string();
+    let _ = sqlx::query("INSERT INTO users (username, password_hash) VALUES (?, ?)")
+        .bind(&form.username).bind(&password_hash).execute(db.get_ref()).await;
+    HttpResponse::Ok().body("registered")
+}
+
+#[post("/login")]
+async fn login_handler(db: web::Data<SqlitePool>, session: Session, form: web::Form<AuthForm>) -> impl Responder {
+    let row = sqlx::query("SELECT password_hash FROM users WHERE username = ?")
+        .bind(&form.username).fetch_optional(db.get_ref()).await;
+
+    match row {
+        Ok(Some(row)) => {
+            let hash: String = row.get("password_hash");
+            if let Ok(parsed_hash) = PasswordHash::new(&hash) {
+                if Argon2::default().verify_password(form.password.as_bytes(), &parsed_hash).is_ok() {
+                    let _ = session.insert("user", &form.username);
+                    return HttpResponse::Ok().body("success");
+                }
+            }
+            HttpResponse::Unauthorized().body("wrong_pwd")
+        }
+        Ok(None) => HttpResponse::NotFound().body("no_user"),
+        Err(_) => HttpResponse::InternalServerError().finish(),
+    }
+}
+
+#[get("/logout")]
+async fn logout_handler(session: Session) -> impl Responder {
+    session.purge();
+    HttpResponse::SeeOther().append_header(("Location", "/")).finish()
+}
+
+// --- 主页面渲染 ---
+
 #[get("/")]
-async fn index(db: web::Data<SqlitePool>) -> impl Responder {
+async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
+    let current_user = session.get::<String>("user").unwrap_or(None);
+
     let messages = sqlx::query("SELECT id, name, message, image_path, video_path, created_at FROM messages ORDER BY id DESC")
         .map(|row: SqliteRow| {
             let time_str: String = row.try_get("created_at").unwrap_or_else(|_| "刚刚".to_string());
@@ -39,9 +91,7 @@ async fn index(db: web::Data<SqlitePool>) -> impl Responder {
                 created_at: if time_str.len() > 16 { time_str[..16].to_string() } else { time_str },
             }
         })
-        .fetch_all(db.get_ref())
-        .await
-        .unwrap_or_default();
+        .fetch_all(db.get_ref()).await.unwrap_or_default();
 
     let markup = html! {
         (DOCTYPE)
@@ -50,11 +100,7 @@ async fn index(db: web::Data<SqlitePool>) -> impl Responder {
                 meta charset="utf-8";
                 meta name="viewport" content="width=device-width, initial-scale=1";
                 title id="page-title" { "MESSAGE BOARD" }
-
                 link rel="icon" type="image/x-icon" href="/static/icon-64x64.ico";
-                link rel="manifest" href="/static/manifest.json";
-                meta name="theme-color" content="#121212";
-
                 style { (PreEscaped(r#"
                     :root { --bg-blur: rgba(255, 255, 255, 0.25); --text-color: #333; --overlay-opacity: 0; }
                     .dark-mode { --bg-blur: rgba(0, 0, 0, 0.4); --text-color: #eee; --overlay-opacity: 0.6; }
@@ -67,7 +113,6 @@ async fn index(db: web::Data<SqlitePool>) -> impl Responder {
                     }
                     body::before { content: ""; position: fixed; inset: 0; background: black; opacity: var(--overlay-opacity); transition: 0.4s; z-index: -1; }
                     h1 { color: white; margin-bottom: 20px; letter-spacing: 4px; font-weight: 200; text-shadow: 0 2px 10px rgba(0,0,0,0.4); }
-
                     .glass {
                         background: var(--bg-blur); backdrop-filter: blur(25px) saturate(180%);
                         border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 28px;
@@ -80,28 +125,33 @@ async fn index(db: web::Data<SqlitePool>) -> impl Responder {
                     }
                     .btn-submit {
                         all: unset; background: linear-gradient(135deg, #6e8efb, #a777e3);
-                        color: white; padding: 10px 25px; border-radius: 20px; cursor: pointer; font-weight: 600;
+                        color: white; padding: 10px 25px; border-radius: 20px; cursor: pointer; font-weight: 600; text-align: center;
                     }
-
-                    /* 顶部按钮栏 */
                     .top-bar { display: flex; gap: 10px; margin-bottom: 20px; z-index: 1; }
-                    .ctrl-btn { background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 15px; border-radius: 20px; cursor: pointer; transition: 0.3s; font-size: 0.9rem; }
-                    .ctrl-btn:hover { background: rgba(255,255,255,0.3); }
-
-                    #file-list {
-                        margin-left: 15px; flex-grow: 1; font-size: 0.85rem; font-weight: 200;
-                        color: inherit; opacity: 0.9; line-height: 1.4;
-                        display: flex; flex-direction: column; gap: 4px;
-                    }
+                    .ctrl-btn { background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 15px; border-radius: 20px; cursor: pointer; text-decoration: none; font-size: 0.9rem; }
+                    #file-list { margin-left: 15px; flex-grow: 1; font-size: 0.85rem; font-weight: 200; color: inherit; opacity: 0.9; display: flex; flex-direction: column; gap: 4px; }
                     .file-item { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 180px; }
-                    .file-link {
-                        display: block; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2);
-                        padding: 12px 15px; border-radius: 12px; margin: 10px 0; text-decoration: none; color: inherit; font-size: 0.85rem;
-                        transition: 0.2s; border-left: 4px solid #6e8efb;
-                    }
+                    .file-link { display: block; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); padding: 12px 15px; border-radius: 12px; margin: 10px 0; text-decoration: none; color: inherit; font-size: 0.85rem; border-left: 4px solid #6e8efb; }
                     .media { width: 100%; border-radius: 18px; margin: 12px 0; display: block; }
                     .time { font-size: 0.7rem; opacity: 0.4; text-align: right; display: block; margin-top: 15px; }
                     .del-btn { float: right; color: #ff4757; border: none; background: none; cursor: pointer; opacity: 0.6; }
+
+                    /* Toast 动画样式 */
+                    #toast {
+                        visibility: hidden; min-width: 250px; background-color: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px);
+                        color: #fff; text-align: center; border-radius: 25px; padding: 14px 24px;
+                        position: fixed; z-index: 1000; left: 50%; bottom: -60px; transform: translateX(-50%);
+                        font-size: 0.95rem; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: 0.3s;
+                    }
+                    #toast.show {
+                        visibility: visible; animation: slide-up-down 10s ease-in-out forwards;
+                    }
+                    @keyframes slide-up-down {
+                        0% { bottom: -60px; opacity: 0; }
+                        5% { bottom: 30px; opacity: 1; }
+                        95% { bottom: 30px; opacity: 1; }
+                        100% { bottom: -60px; opacity: 0; }
+                    }
                 "#)) }
             }
             body {
@@ -112,103 +162,159 @@ async fn index(db: web::Data<SqlitePool>) -> impl Responder {
                 div class="top-bar" {
                     button id="theme-toggle" class="ctrl-btn" onclick="toggleDarkMode()" { "🌓 Mode" }
                     button id="lang-toggle" class="ctrl-btn" onclick="toggleLang()" { "🌐 Lang" }
+                    @if current_user.is_some() { a href="/logout" class="ctrl-btn" id="logout-btn" { "🚪 Logout" } }
                 }
 
                 div class="glass" {
-                    form method="post" action="/post" enctype="multipart/form-data" {
-                        input type="text" name="user_name" id="input-name" class="input-box" placeholder="Name" required;
-                        textarea name="user_msg" id="grow-text" class="input-box" placeholder="Write some..." required {}
-
-                        div style="display:flex; align-items:center;" {
-                            div style="position:relative; width:40px; height:40px; background:rgba(255,255,255,0.2); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;" {
-                                span style="font-size:24px; color:white;" { "+" }
-                                input type="file" id="file-input" name="media" multiple style="position:absolute; inset:0; opacity:0; cursor:pointer;";
+                    @match current_user {
+                        None => {
+                            form id="auth-form" method="post" action="/login" {
+                                input type="text" name="username" id="login-user" class="input-box" placeholder="Username" required;
+                                input type="password" name="password" id="login-pass" class="input-box" placeholder="Password" required;
+                                div style="display:flex; gap:10px;" {
+                                    button type="submit" id="signin-btn" class="btn-submit" style="flex:1" { "Sign In" }
+                                    button type="submit" formaction="/register" id="signup-btn" class="btn-submit" style="flex:1; background:rgba(255,255,255,0.2)" { "Sign Up" }
+                                }
                             }
-                            div id="file-list" {}
-                            button type="submit" id="btn-submit" class="btn-submit" { "Submit" }
+                        }
+                        Some(ref user) => {
+                            form method="post" action="/post" enctype="multipart/form-data" {
+                                input type="text" name="user_name" class="input-box" value=(user) readonly;
+                                textarea name="user_msg" id="grow-text" class="input-box" placeholder="Write some..." required {}
+                                div style="display:flex; align-items:center;" {
+                                    div style="position:relative; width:40px; height:40px; background:rgba(255,255,255,0.2); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;" {
+                                        span style="font-size:24px; color:white;" { "+" }
+                                        input type="file" id="file-input" name="media" multiple style="position:absolute; inset:0; opacity:0; cursor:pointer;";
+                                    }
+                                    div id="file-list" {}
+                                    button type="submit" id="btn-submit" class="btn-submit" { "Submit" }
+                                }
+                            }
                         }
                     }
                 }
 
-                h2 id="list-header" style="color:white; font-weight:200; margin-bottom:15px; width:100%; max-width:500px;" { "Message list：" }
+                @if let Some(ref user) = current_user {
+                    h2 id="list-header" style="color:white; font-weight:200; margin-bottom:15px; width:100%; max-width:500px;" { "Message list：" }
 
-                @if messages.is_empty() {
-                    div class="glass" id="empty-hint" style="text-align:center; color:white; font-style:italic;" { "No messages yet. Be the first!" }
-                } @else {
-                    @for msg in &messages {
-                        div class="glass" {
-                            form method="post" action=(format!("/delete/{}", msg.id)) { button type="submit" class="del-btn i18n-del" { "delete" } }
-                            h3 { (msg.name) }
-                            div {
-                                @if let Some(img_list) = &msg.image_path {
-                                    @for img in img_list.split(',') {
-                                        @if !img.is_empty() { img class="media" src=(format!("/uploads/{}", img)); }
-                                    }
+                    @if messages.is_empty() {
+                        div class="glass" id="empty-hint" style="text-align:center; color:white; font-style:italic;" { "No messages yet. Be the first!" }
+                    } @else {
+                        @for msg in &messages {
+                            div class="glass" {
+                                @if msg.name == *user {
+                                    form method="post" action=(format!("/delete/{}", msg.id)) { button type="submit" class="del-btn i18n-del" { "delete" } }
                                 }
-                                @if let Some(file_list) = &msg.video_path {
-                                    @for path in file_list.split(',') {
-                                        @if !path.is_empty() {
-                                            @let ext = Path::new(path).extension().and_then(|s| s.to_str()).unwrap_or("").to_lowercase();
-                                            @if ["mp4", "webm", "mov"].contains(&ext.as_str()) {
-                                                video class="media" controls { source src=(format!("/uploads/{}", path)); }
-                                            } @else if ["mp3", "wav", "ogg", "m4a", "flac", "aac"].contains(&ext.as_str()) {
-                                                audio controls style="width:100%; margin:10px 0; height:40px;" { source src=(format!("/uploads/{}", path)); }
-                                            } @else {
-                                                a class="file-link" href=(format!("/uploads/{}", path)) target="_blank" {
-                                                    span class="i18n-view" { "📄 View File: " } (path)
+                                h3 { (msg.name) }
+                                div {
+                                    @if let Some(img_list) = &msg.image_path {
+                                        @for img in img_list.split(',') {
+                                            @if !img.is_empty() { img class="media" src=(format!("/uploads/{}", img)); }
+                                        }
+                                    }
+                                    @if let Some(file_list) = &msg.video_path {
+                                        @for path in file_list.split(',') {
+                                            @if !path.is_empty() {
+                                                @let ext = Path::new(path).extension().and_then(|s| s.to_str()).unwrap_or("").to_lowercase();
+                                                @if ["mp4", "webm", "mov"].contains(&ext.as_str()) {
+                                                    video class="media" controls { source src=(format!("/uploads/{}", path)); }
+                                                } @else if ["mp3", "wav", "ogg", "m4a", "flac", "aac"].contains(&ext.as_str()) {
+                                                    audio controls style="width:100%; margin:10px 0; height:40px;" { source src=(format!("/uploads/{}", path)); }
+                                                } @else {
+                                                    a class="file-link" href=(format!("/uploads/{}", path)) target="_blank" {
+                                                        span class="i18n-view" { "📄 View File: " } (path)
+                                                    }
                                                 }
                                             }
                                         }
                                     }
                                 }
+                                div style="line-height:1.6; margin-top:10px;" { (PreEscaped(markdown_to_html(&msg.message))) }
+                                span class="time" { (msg.created_at) }
                             }
-                            div style="line-height:1.6; margin-top:10px;" { (PreEscaped(markdown_to_html(&msg.message))) }
-                            span class="time" { (msg.created_at) }
                         }
                     }
                 }
 
+                div id="toast" {}
+
                 script { (PreEscaped(r#"
                     const i18n = {
                         en: {
-                            title: "MESSAGE BOARD",
-                            namePh: "Name",
-                            textPh: "Write some...",
-                            submit: "Submit",
-                            list: "Message list：",
-                            empty: "No messages yet. Be the first!",
-                            del: "delete",
-                            view: "📄 View File: "
+                            title: "MESSAGE BOARD", mode: "🌓 Mode", lang: "🌐 Lang",
+                            loginUser: "Username", loginPass: "Password",
+                            signin: "Sign In", signup: "Sign Up", logout: "🚪 Logout",
+                            textPh: "Write some...", submit: "Submit", list: "Message list：",
+                            del: "delete", empty: "No messages yet. Be the first!", view: "📄 View File: ",
+                            tipSuccess: "✅ Login successful!", tipNoUser: "❓ User not found. Please register first.", tipWrong: "❌ Incorrect username or password.", tipReg: "📝 Registration successful! Now please Sign In."
                         },
                         zh: {
-                            title: "留言板",
-                            namePh: "昵称",
-                            textPh: "说点什么...",
-                            submit: "发布留言",
-                            list: "历史留言：",
-                            empty: "暂无留言，快来抢沙发！",
-                            del: "删除",
-                            view: "📄 查看文件: "
+                            title: "留言板", mode: "🌓 模式", lang: "🌐 语言",
+                            loginUser: "用户名", loginPass: "密码",
+                            signin: "登录", signup: "注册", logout: "🚪 退出",
+                            textPh: "说点什么...", submit: "发布留言", list: "历史留言：",
+                            del: "删除", empty: "暂无留言，快来抢沙发！", view: "📄 查看文件: ",
+                            tipSuccess: "✅ 登录成功！", tipNoUser: "❓ 请先注册", tipWrong: "❌ 请检查用户名和密码", tipReg: "📝 注册成功！现在请登录。"
                         }
                     };
+
+                    function showToast(msg) {
+                        const t = document.getElementById("toast");
+                        t.textContent = msg;
+                        t.classList.remove("show");
+                        void t.offsetWidth;
+                        t.classList.add("show");
+                        setTimeout(() => t.classList.remove("show"), 10000);
+                    }
 
                     function updateUI() {
                         const lang = localStorage.getItem("lang") || "en";
                         const t = i18n[lang];
-
-                        document.getElementById("main-title").textContent = t.title;
                         document.getElementById("page-title").textContent = t.title;
-                        document.getElementById("input-name").placeholder = t.namePh;
-                        document.getElementById("grow-text").placeholder = t.textPh;
-                        document.getElementById("btn-submit").textContent = t.submit;
-                        document.getElementById("list-header").textContent = t.list;
+                        document.getElementById("main-title").textContent = t.title;
+                        document.getElementById("theme-toggle").textContent = t.mode;
+                        document.getElementById("lang-toggle").textContent = t.lang;
 
-                        const emptyHint = document.getElementById("empty-hint");
-                        if(emptyHint) emptyHint.textContent = t.empty;
+                        const lUser = document.getElementById("login-user"); if(lUser) lUser.placeholder = t.loginUser;
+                        const lPass = document.getElementById("login-pass"); if(lPass) lPass.placeholder = t.loginPass;
+                        const siBtn = document.getElementById("signin-btn"); if(siBtn) siBtn.textContent = t.signin;
+                        const suBtn = document.getElementById("signup-btn"); if(suBtn) suBtn.textContent = t.signup;
+
+                        const logout = document.getElementById("logout-btn"); if(logout) logout.textContent = t.logout;
+                        const msgTa = document.getElementById("grow-text"); if(msgTa) msgTa.placeholder = t.textPh;
+                        const subBtn = document.getElementById("btn-submit"); if(subBtn) subBtn.textContent = t.submit;
+                        const listH = document.getElementById("list-header"); if(listH) listH.textContent = t.list;
+                        const emptyH = document.getElementById("empty-hint"); if(emptyH) emptyH.textContent = t.empty;
 
                         document.querySelectorAll(".i18n-del").forEach(el => el.textContent = t.del);
                         document.querySelectorAll(".i18n-view").forEach(el => el.textContent = t.view);
                     }
+
+                    // 异步处理登录/注册
+                    document.addEventListener("submit", async (e) => {
+                        const form = e.target;
+                        const action = e.submitter ? e.submitter.getAttribute("formaction") || form.getAttribute("action") : form.getAttribute("action");
+
+                        if (action === "/login" || action === "/register") {
+                            e.preventDefault();
+                            const lang = localStorage.getItem("lang") || "en";
+                            const t = i18n[lang];
+                            const formData = new URLSearchParams(new FormData(form));
+
+                            try {
+                                const res = await fetch(action, { method: "POST", body: formData });
+                                if (action === "/login") {
+                                    if (res.ok) {
+                                        showToast(t.tipSuccess);
+                                        setTimeout(() => location.reload(), 1500);
+                                    } else if (res.status === 404) showToast(t.tipNoUser);
+                                    else if (res.status === 401) showToast(t.tipWrong);
+                                } else {
+                                    if (res.ok) showToast(t.tipReg);
+                                }
+                            } catch (err) { console.error(err); }
+                        }
+                    });
 
                     function toggleLang() {
                         const current = localStorage.getItem("lang") || "en";
@@ -216,20 +322,19 @@ async fn index(db: web::Data<SqlitePool>) -> impl Responder {
                         updateUI();
                     }
 
-                    // 初始化语言
+                    function toggleDarkMode() {
+                        const isDark = document.body.classList.toggle("dark-mode");
+                        localStorage.setItem("theme", isDark ? "dark" : "light");
+                    }
+
                     updateUI();
 
-                    // 自由缩放逻辑
                     const ta = document.getElementById("grow-text");
-                    ta.addEventListener("input", function() {
-                        this.style.height = "auto";
-                        this.style.height = this.scrollHeight + "px";
-                    });
+                    if(ta) ta.addEventListener("input", function() { this.style.height="auto"; this.style.height=this.scrollHeight+"px"; });
 
-                    // 文件名动态列表
                     const fileInput = document.getElementById("file-input");
                     const fileList = document.getElementById("file-list");
-                    fileInput.addEventListener("change", function() {
+                    if(fileInput) fileInput.addEventListener("change", function() {
                         fileList.innerHTML = "";
                         Array.from(this.files).forEach(file => {
                             const div = document.createElement("div");
@@ -238,17 +343,6 @@ async fn index(db: web::Data<SqlitePool>) -> impl Responder {
                             fileList.appendChild(div);
                         });
                     });
-
-                    function toggleDarkMode() {
-                        const isDark = document.body.classList.toggle("dark-mode");
-                        localStorage.setItem("theme", isDark ? "dark" : "light");
-                    }
-
-                    if ('serviceWorker' in navigator) {
-                        window.addEventListener('load', () => {
-                            navigator.serviceWorker.register('/static/sw.js');
-                        });
-                    }
                 "#)) }
             }
         }
@@ -257,8 +351,11 @@ async fn index(db: web::Data<SqlitePool>) -> impl Responder {
 }
 
 #[post("/post")]
-async fn post_message(mut payload: Multipart, db: web::Data<SqlitePool>) -> impl Responder {
-    let mut name = String::new();
+async fn post_message(mut payload: Multipart, db: web::Data<SqlitePool>, session: Session) -> impl Responder {
+    let user = match session.get::<String>("user").ok().flatten() {
+        Some(u) => u,
+        None => return HttpResponse::SeeOther().append_header(("Location", "/")).finish(),
+    };
     let mut message = String::new();
     let mut images = Vec::new();
     let mut others = Vec::new();
@@ -266,41 +363,36 @@ async fn post_message(mut payload: Multipart, db: web::Data<SqlitePool>) -> impl
     while let Ok(Some(mut field)) = payload.try_next().await {
         let disp = field.content_disposition().clone();
         let field_name = disp.get_name().unwrap_or("");
-
-        match field_name {
-            "user_name" => { while let Ok(Some(chunk)) = field.try_next().await { name.push_str(std::str::from_utf8(&chunk).unwrap_or("")); } }
-            "user_msg" => { while let Ok(Some(chunk)) = field.try_next().await { message.push_str(std::str::from_utf8(&chunk).unwrap_or("")); } }
-            "media" => {
-                if let Some(filename) = disp.get_filename() {
-                    if !filename.is_empty() {
-                        let ext = Path::new(filename).extension().and_then(|s| s.to_str()).unwrap_or("").to_lowercase();
-                        let fname = format!("{}-{}", Uuid::new_v4(), sanitize(filename));
-                        let filepath = Path::new("uploads").join(&fname);
-                        let _ = fs::create_dir_all("uploads");
-                        if let Ok(mut f) = fs::File::create(&filepath) {
-                            while let Ok(Some(chunk)) = field.try_next().await { let _ = f.write_all(&chunk); }
-                            if ["jpg","jpeg","png","gif","webp"].contains(&ext.as_str()) { images.push(fname); } else { others.push(fname); }
-                        }
+        if field_name == "user_msg" {
+            while let Ok(Some(chunk)) = field.try_next().await { message.push_str(std::str::from_utf8(&chunk).unwrap_or("")); }
+        } else if field_name == "media" {
+            if let Some(filename) = disp.get_filename() {
+                if !filename.is_empty() {
+                    let ext = Path::new(filename).extension().and_then(|s| s.to_str()).unwrap_or("").to_lowercase();
+                    let fname = format!("{}-{}", Uuid::new_v4(), sanitize(filename));
+                    let _ = fs::create_dir_all("uploads");
+                    if let Ok(mut f) = fs::File::create(format!("uploads/{}", fname)) {
+                        while let Ok(Some(chunk)) = field.try_next().await { let _ = f.write_all(&chunk); }
+                        if ["jpg","jpeg","png","gif","webp"].contains(&ext.as_str()) { images.push(fname); } else { others.push(fname); }
                     }
                 }
             }
-            _ => ()
         }
     }
-
-    if !name.trim().is_empty() {
+    if !message.trim().is_empty() {
         let img_str = if images.is_empty() { None } else { Some(images.join(",")) };
         let other_str = if others.is_empty() { None } else { Some(others.join(",")) };
         let _ = sqlx::query("INSERT INTO messages (name, message, image_path, video_path) VALUES (?, ?, ?, ?)")
-            .bind(&name).bind(&message).bind(img_str).bind(other_str)
-            .execute(db.get_ref()).await;
+            .bind(user).bind(message).bind(img_str).bind(other_str).execute(db.get_ref()).await;
     }
     HttpResponse::SeeOther().append_header(("Location", "/")).finish()
 }
 
 #[post("/delete/{id}")]
-async fn delete_message(db: web::Data<SqlitePool>, id: web::Path<i64>) -> impl Responder {
-    let _ = sqlx::query("DELETE FROM messages WHERE id = ?").bind(*id).execute(db.get_ref()).await;
+async fn delete_message(db: web::Data<SqlitePool>, id: web::Path<i64>, session: Session) -> impl Responder {
+    if let Some(user) = session.get::<String>("user").ok().flatten() {
+        let _ = sqlx::query("DELETE FROM messages WHERE id = ? AND name = ?").bind(*id).bind(user).execute(db.get_ref()).await;
+    }
     HttpResponse::SeeOther().append_header(("Location", "/")).finish()
 }
 
@@ -308,15 +400,16 @@ async fn delete_message(db: web::Data<SqlitePool>, id: web::Path<i64>) -> impl R
 async fn main() -> io::Result<()> {
     let _ = fs::create_dir_all("uploads");
     let db_url = format!("sqlite://{}", std::env::current_dir()?.join("guestbook.db").display());
-    let db = SqlitePool::connect(&db_url).await.expect("DB连接失败");
-    sqlx::query(r#"CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, message TEXT NOT NULL, image_path TEXT, video_path TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)"#)
-        .execute(&db).await.expect("建表失败");
-
+    let db = SqlitePool::connect(&db_url).await.expect("DB error");
+    sqlx::query("CREATE TABLE IF NOT EXISTS users (username TEXT PRIMARY KEY, password_hash TEXT NOT NULL)").execute(&db).await.ok();
+    sqlx::query("CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, message TEXT NOT NULL, image_path TEXT, video_path TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)").execute(&db).await.ok();
+    let key = Key::generate();
     println!("🚀 Server ready at http://localhost:6790");
     HttpServer::new(move || {
-        App::new().app_data(web::Data::new(db.clone()))
-            .service(index).service(post_message).service(delete_message)
-            .service(Files::new("/uploads", "uploads").show_files_listing())
-            .service(Files::new("/static", "static"))
+        App::new()
+            .app_data(web::Data::new(db.clone()))
+            .wrap(SessionMiddleware::new(CookieSessionStore::default(), key.clone()))
+            .service(index).service(login_handler).service(register_handler).service(logout_handler).service(post_message).service(delete_message)
+            .service(Files::new("/uploads", "uploads")).service(Files::new("/static", "static"))
     }).bind("0.0.0.0:6790")?.run().await
 }
