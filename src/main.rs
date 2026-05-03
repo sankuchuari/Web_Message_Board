@@ -1,4 +1,4 @@
-use actix_web::{web, App, HttpServer, Responder, HttpResponse, get, post, cookie::Key};
+use actix_web::{web, App, HttpServer, Responder, HttpResponse, get, post, cookie::Key, cookie::SameSite};
 use actix_session::{Session, SessionMiddleware, storage::CookieSessionStore};
 use actix_multipart::Multipart;
 use actix_files::Files;
@@ -57,6 +57,7 @@ async fn login_handler(db: web::Data<SqlitePool>, session: Session, form: web::F
             if let Ok(parsed_hash) = PasswordHash::new(&hash) {
                 if Argon2::default().verify_password(form.password.as_bytes(), &parsed_hash).is_ok() {
                     let _ = session.insert("user", &form.username);
+                    // 重要：确保返回 Ok 状态码，由前端 fetch 处理跳转
                     return HttpResponse::Ok().body("success");
                 }
             }
@@ -136,7 +137,6 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                     .time { font-size: 0.7rem; opacity: 0.4; text-align: right; display: block; margin-top: 15px; }
                     .del-btn { float: right; color: #ff4757; border: none; background: none; cursor: pointer; opacity: 0.6; }
 
-                    /* Toast 动画样式 */
                     #toast {
                         visibility: hidden; min-width: 250px; background-color: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px);
                         color: #fff; text-align: center; border-radius: 25px; padding: 14px 24px;
@@ -290,7 +290,6 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                         document.querySelectorAll(".i18n-view").forEach(el => el.textContent = t.view);
                     }
 
-                    // 异步处理登录/注册
                     document.addEventListener("submit", async (e) => {
                         const form = e.target;
                         const action = e.submitter ? e.submitter.getAttribute("formaction") || form.getAttribute("action") : form.getAttribute("action");
@@ -306,7 +305,8 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                                 if (action === "/login") {
                                     if (res.ok) {
                                         showToast(t.tipSuccess);
-                                        setTimeout(() => location.reload(), 1500);
+                                        // 移动端兼容性跳转：使用 href 替代 reload
+                                        setTimeout(() => { window.location.href = "/"; }, 1500);
                                     } else if (res.status === 404) showToast(t.tipNoUser);
                                     else if (res.status === 401) showToast(t.tipWrong);
                                 } else {
@@ -403,12 +403,19 @@ async fn main() -> io::Result<()> {
     let db = SqlitePool::connect(&db_url).await.expect("DB error");
     sqlx::query("CREATE TABLE IF NOT EXISTS users (username TEXT PRIMARY KEY, password_hash TEXT NOT NULL)").execute(&db).await.ok();
     sqlx::query("CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, message TEXT NOT NULL, image_path TEXT, video_path TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)").execute(&db).await.ok();
+
     let key = Key::generate();
     println!("🚀 Server ready at http://localhost:6790");
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(db.clone()))
-            .wrap(SessionMiddleware::new(CookieSessionStore::default(), key.clone()))
+            // --- 修正局域网 HTTP 登录关键配置 ---
+            .wrap(
+                SessionMiddleware::builder(CookieSessionStore::default(), key.clone())
+                    .cookie_secure(false) // 允许局域网 HTTP
+                    .cookie_same_site(SameSite::Lax) // 确保跳转时 Cookie 有效
+                    .build()
+            )
             .service(index).service(login_handler).service(register_handler).service(logout_handler).service(post_message).service(delete_message)
             .service(Files::new("/uploads", "uploads")).service(Files::new("/static", "static"))
     }).bind("0.0.0.0:6790")?.run().await
