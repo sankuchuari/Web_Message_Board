@@ -456,5 +456,5 @@ async fn main() -> io::Result<()> {
             )
             .service(index).service(login_handler).service(register_handler).service(logout_handler).service(post_message).service(delete_message)
             .service(Files::new("/uploads", "uploads")).service(Files::new("/static", "static"))
-    }).bind("0.0.0.0:6790")?.run().await
+    }).bind("0.0.0.0:6790")?.bind("[::]:6790")?.run().await
 }
