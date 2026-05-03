@@ -8,8 +8,10 @@ use sqlx::{SqlitePool, sqlite::SqliteRow, Row};
 use futures_util::TryStreamExt as _;
 use uuid::Uuid;
 use sanitize_filename::sanitize;
-use std::{fs, io::Write, path::Path, io};
+use std::{fs, io::Write, path::Path, io, time::Duration};
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier, password_hash::SaltString};
+use rand::Rng;
+use ammonia::clean; // 引入 HTML 净化库
 
 // --- 数据结构 ---
 struct StoredMessage {
@@ -27,29 +29,53 @@ struct AuthForm {
     password: String,
 }
 
+// 修复 XSS：Markdown 转 HTML 后必须经过 ammonia 清洗
 fn markdown_to_html(input: &str) -> String {
     let mut html_output = String::new();
     let parser = Parser::new_ext(input, Options::all());
     push_html(&mut html_output, parser);
-    html_output
+    // 过滤掉所有 script, onerror, style 等危险标签和属性
+    clean(&html_output)
 }
 
 // --- 账户验证处理 ---
 
 #[post("/register")]
 async fn register_handler(db: web::Data<SqlitePool>, form: web::Form<AuthForm>) -> impl Responder {
+    if form.username.len() > 32 || form.password.len() > 128 {
+        return HttpResponse::BadRequest().body("invalid_input");
+    }
+
     let salt = SaltString::generate(&mut argon2::password_hash::rand_core::OsRng);
     let argon2 = Argon2::default();
-    let password_hash = argon2.hash_password(form.password.as_bytes(), &salt).unwrap().to_string();
-    let _ = sqlx::query("INSERT INTO users (username, password_hash) VALUES (?, ?)")
-        .bind(&form.username).bind(&password_hash).execute(db.get_ref()).await;
-    HttpResponse::Ok().body("registered")
+    let password_hash = match argon2.hash_password(form.password.as_bytes(), &salt) {
+        Ok(h) => h.to_string(),
+        Err(_) => return HttpResponse::InternalServerError().finish(),
+    };
+
+    let result = sqlx::query("INSERT INTO users (username, password_hash) VALUES (?, ?)")
+        .bind(&form.username)
+        .bind(&password_hash)
+        .execute(db.get_ref())
+        .await;
+
+    match result {
+        Ok(_) => HttpResponse::Ok().body("registered"),
+        Err(_) => HttpResponse::Conflict().body("user_exists"),
+    }
 }
 
 #[post("/login")]
 async fn login_handler(db: web::Data<SqlitePool>, session: Session, form: web::Form<AuthForm>) -> impl Responder {
+    let delay = rand::thread_rng().gen_range(100..500);
+    tokio::time::sleep(Duration::from_millis(delay)).await;
+
     let row = sqlx::query("SELECT password_hash FROM users WHERE username = ?")
-        .bind(&form.username).fetch_optional(db.get_ref()).await;
+        .bind(&form.username)
+        .fetch_optional(db.get_ref())
+        .await;
+
+    let auth_failed = HttpResponse::Unauthorized().body("wrong_credentials");
 
     match row {
         Ok(Some(row)) => {
@@ -57,14 +83,13 @@ async fn login_handler(db: web::Data<SqlitePool>, session: Session, form: web::F
             if let Ok(parsed_hash) = PasswordHash::new(&hash) {
                 if Argon2::default().verify_password(form.password.as_bytes(), &parsed_hash).is_ok() {
                     let _ = session.insert("user", &form.username);
-                    // 重要：确保返回 Ok 状态码，由前端 fetch 处理跳转
+                    session.renew();
                     return HttpResponse::Ok().body("success");
                 }
             }
-            HttpResponse::Unauthorized().body("wrong_pwd")
+            auth_failed
         }
-        Ok(None) => HttpResponse::NotFound().body("no_user"),
-        Err(_) => HttpResponse::InternalServerError().finish(),
+        _ => auth_failed,
     }
 }
 
@@ -74,7 +99,7 @@ async fn logout_handler(session: Session) -> impl Responder {
     HttpResponse::SeeOther().append_header(("Location", "/")).finish()
 }
 
-// --- 主页面渲染 ---
+// --- 主页面渲染 (UI 完全保留) ---
 
 #[get("/")]
 async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
@@ -229,6 +254,7 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                                         }
                                     }
                                 }
+                                // XSS 修复点：markdown_to_html 内部现在会调用 ammonia::clean
                                 div style="line-height:1.6; margin-top:10px;" { (PreEscaped(markdown_to_html(&msg.message))) }
                                 span class="time" { (msg.created_at) }
                             }
@@ -246,7 +272,7 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                             signin: "Sign In", signup: "Sign Up", logout: "🚪 Logout",
                             textPh: "Write some...", submit: "Submit", list: "Message list：",
                             del: "delete", empty: "No messages yet. Be the first!", view: "📄 View File: ",
-                            tipSuccess: "✅ Login successful!", tipNoUser: "❓ User not found. Please register first.", tipWrong: "❌ Incorrect username or password.", tipReg: "📝 Registration successful! Now please Sign In."
+                            tipSuccess: "✅ Login successful!", tipNoUser: "❌ Incorrect username or password.", tipWrong: "❌ Incorrect username or password.", tipReg: "📝 Registration successful! Now please Sign In.", tipConflict: "⚠️ Username already exists."
                         },
                         zh: {
                             title: "留言板", mode: "🌓 模式", lang: "🌐 语言",
@@ -254,7 +280,7 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                             signin: "登录", signup: "注册", logout: "🚪 退出",
                             textPh: "说点什么...", submit: "发布留言", list: "历史留言：",
                             del: "删除", empty: "暂无留言，快来抢沙发！", view: "📄 查看文件: ",
-                            tipSuccess: "✅ 登录成功！", tipNoUser: "❓ 请先注册", tipWrong: "❌ 请检查用户名和密码", tipReg: "📝 注册成功！现在请登录。"
+                            tipSuccess: "✅ 登录成功！", tipNoUser: "❌ 用户名或密码错误", tipWrong: "❌ 用户名或密码错误", tipReg: "📝 注册成功！现在请登录。", tipConflict: "⚠️ 该用户名已被注册"
                         }
                     };
 
@@ -305,12 +331,13 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                                 if (action === "/login") {
                                     if (res.ok) {
                                         showToast(t.tipSuccess);
-                                        // 移动端兼容性跳转：使用 href 替代 reload
                                         setTimeout(() => { window.location.href = "/"; }, 1500);
-                                    } else if (res.status === 404) showToast(t.tipNoUser);
-                                    else if (res.status === 401) showToast(t.tipWrong);
+                                    } else {
+                                        showToast(t.tipWrong);
+                                    }
                                 } else {
                                     if (res.ok) showToast(t.tipReg);
+                                    else if (res.status === 409) showToast(t.tipConflict);
                                 }
                             } catch (err) { console.error(err); }
                         }
@@ -356,22 +383,28 @@ async fn post_message(mut payload: Multipart, db: web::Data<SqlitePool>, session
         Some(u) => u,
         None => return HttpResponse::SeeOther().append_header(("Location", "/")).finish(),
     };
+
     let mut message = String::new();
     let mut images = Vec::new();
     let mut others = Vec::new();
 
     while let Ok(Some(mut field)) = payload.try_next().await {
-        let disp = field.content_disposition().clone();
-        let field_name = disp.get_name().unwrap_or("");
+        let disp = field.content_disposition();
+        let field_name = disp.get_name().unwrap_or("").to_string();
+        let filename = disp.get_filename().map(|s| s.to_string());
+
         if field_name == "user_msg" {
-            while let Ok(Some(chunk)) = field.try_next().await { message.push_str(std::str::from_utf8(&chunk).unwrap_or("")); }
+            while let Ok(Some(chunk)) = field.try_next().await {
+                message.push_str(std::str::from_utf8(&chunk).unwrap_or(""));
+            }
         } else if field_name == "media" {
-            if let Some(filename) = disp.get_filename() {
-                if !filename.is_empty() {
-                    let ext = Path::new(filename).extension().and_then(|s| s.to_str()).unwrap_or("").to_lowercase();
-                    let fname = format!("{}-{}", Uuid::new_v4(), sanitize(filename));
+            if let Some(name) = filename {
+                if !name.is_empty() {
+                    let ext = Path::new(&name).extension().and_then(|s| s.to_str()).unwrap_or("").to_lowercase();
+                    let fname = format!("{}.{}", Uuid::new_v4(), sanitize(&ext));
                     let _ = fs::create_dir_all("uploads");
-                    if let Ok(mut f) = fs::File::create(format!("uploads/{}", fname)) {
+                    let upload_path = format!("uploads/{}", fname);
+                    if let Ok(mut f) = fs::File::create(&upload_path) {
                         while let Ok(Some(chunk)) = field.try_next().await { let _ = f.write_all(&chunk); }
                         if ["jpg","jpeg","png","gif","webp"].contains(&ext.as_str()) { images.push(fname); } else { others.push(fname); }
                     }
@@ -379,11 +412,14 @@ async fn post_message(mut payload: Multipart, db: web::Data<SqlitePool>, session
             }
         }
     }
-    if !message.trim().is_empty() {
+
+    if !message.trim().is_empty() || !images.is_empty() || !others.is_empty() {
+        // XSS 防御：在存储前也进行一次清洗
+        let safe_message = clean(&message);
         let img_str = if images.is_empty() { None } else { Some(images.join(",")) };
         let other_str = if others.is_empty() { None } else { Some(others.join(",")) };
         let _ = sqlx::query("INSERT INTO messages (name, message, image_path, video_path) VALUES (?, ?, ?, ?)")
-            .bind(user).bind(message).bind(img_str).bind(other_str).execute(db.get_ref()).await;
+            .bind(user).bind(safe_message).bind(img_str).bind(other_str).execute(db.get_ref()).await;
     }
     HttpResponse::SeeOther().append_header(("Location", "/")).finish()
 }
@@ -391,6 +427,7 @@ async fn post_message(mut payload: Multipart, db: web::Data<SqlitePool>, session
 #[post("/delete/{id}")]
 async fn delete_message(db: web::Data<SqlitePool>, id: web::Path<i64>, session: Session) -> impl Responder {
     if let Some(user) = session.get::<String>("user").ok().flatten() {
+        // 修复水平越权：SQL 语句中必须带上 name 校验
         let _ = sqlx::query("DELETE FROM messages WHERE id = ? AND name = ?").bind(*id).bind(user).execute(db.get_ref()).await;
     }
     HttpResponse::SeeOther().append_header(("Location", "/")).finish()
@@ -400,7 +437,8 @@ async fn delete_message(db: web::Data<SqlitePool>, id: web::Path<i64>, session: 
 async fn main() -> io::Result<()> {
     let _ = fs::create_dir_all("uploads");
     let db_url = format!("sqlite://{}", std::env::current_dir()?.join("guestbook.db").display());
-    let db = SqlitePool::connect(&db_url).await.expect("DB error");
+    let db = SqlitePool::connect(&db_url).await.expect("数据库启动失败");
+
     sqlx::query("CREATE TABLE IF NOT EXISTS users (username TEXT PRIMARY KEY, password_hash TEXT NOT NULL)").execute(&db).await.ok();
     sqlx::query("CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, message TEXT NOT NULL, image_path TEXT, video_path TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)").execute(&db).await.ok();
 
@@ -409,11 +447,11 @@ async fn main() -> io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(db.clone()))
-            // --- 修正局域网 HTTP 登录关键配置 ---
             .wrap(
                 SessionMiddleware::builder(CookieSessionStore::default(), key.clone())
-                    .cookie_secure(false) // 允许局域网 HTTP
-                    .cookie_same_site(SameSite::Lax) // 确保跳转时 Cookie 有效
+                    .cookie_secure(false)
+                    .cookie_same_site(SameSite::Lax)
+                    .cookie_http_only(true) // 🔒 禁止 JS 读取，防御 Session 劫持
                     .build()
             )
             .service(index).service(login_handler).service(register_handler).service(logout_handler).service(post_message).service(delete_message)
