@@ -1,17 +1,18 @@
 [package]
 name = "Web_Message_Board"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 
 [dependencies]
 actix-web = "4"
-maud = "0.25"
-serde = { version = "1", features = ["derive"] }
-pulldown-cmark = "0.10"
-sqlx = { version = "0.7", features = ["runtime-tokio", "sqlite", "macros"] }
-tokio = { version = "1", features = ["full"] }
-futures-util = "0.3.31"
-uuid = { version = "1.16.0", features = ["v4"] }
-actix-multipart = "0.4"
 actix-files = "0.6"
+actix-multipart = "0.6"
+actix-session = { version = "0.9", features = ["cookie-session"] }
+maud = { version = "0.26", features = ["actix-web"] }
+sqlx = { version = "0.7", features = ["runtime-tokio", "sqlite", "macros"] }
+pulldown-cmark = "0.9"
+futures-util = "0.3"
+uuid = { version = "1.0", features = ["v4"] }
 sanitize-filename = "0.5"
+serde = { version = "1.0", features = ["derive"] }
+argon2 = "0.5"
