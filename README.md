@@ -18,23 +18,39 @@
 
 ## 🛠️ 技术栈
 
-**Backend**
+**后端 (Backend)**
+*   **Rust**: 核心逻辑处理
+*   **Actix-web**: 高性能异步 Web 框架
+*   **SQLx + SQLite**: 异步数据库操作与持久化
+*   **Argon2**: 工业级密码哈希加密
+*   **Actix-session**: 基于 Cookie 的加密会话控制
 
-* Rust
-* Actix-web
-* SQLx
-* SQLite
-
-**Frontend**
-
-* 原生 JavaScript
-* CSS（无框架）
-* Maud 模板
+**前端 (Frontend)**
+*   **JavaScript**: 原生异步交互 (Fetch API)
+*   **Maud**: 强类型 HTML 模板引擎
+*   **CSS3**: Flexbox 布局 + Keyframes 动画（无外部依赖）
 
 **PWA**
 
 * manifest.json
 * Service Worker
+
+---
+## ⚙️ 核心设计说明
+
+### 📌 1. 交互设计：10秒智能平滑弹窗
+项目弃用了传统的页面重定向反馈，采用 CSS3 `keyframes` 实现非阻塞式提醒。
+- **触发机制**：通过 JavaScript 拦截表单提交，根据后端返回的 HTTP 状态码（200/401/404）触发。
+- **动画表现**：弹窗从浏览器底沿平滑弹出，并在 10 秒后自动向下收回，确保用户有充足时间阅读反馈信息而不中断浏览体验。
+
+### 📌 2. 安全与存储策略
+- **身份验证**：数据库严禁存储明文密码，统一使用 Argon2 进行单向高强度哈希。
+- **会话持久化**：使用加密 Cookie 维护登录状态，确保留言板的“发布”与“删除”功能仅对合法所有者开放。
+- **IO 安全**：对所有上传的文件名进行 `sanitize` 过滤，并使用 UUID 重新命名，彻底杜绝路径穿越攻击。
+
+### 📌 3. PWA 原生化
+- 通过 `manifest.json` 定义应用色彩与图标。
+- 配置 Service Worker 确保应用在移动端具备独立运行的能力，提升加载性能。
 
 ---
 
