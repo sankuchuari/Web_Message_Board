@@ -449,7 +449,7 @@ async fn main() -> io::Result<()> {
             .app_data(web::Data::new(db.clone()))
             .wrap(
                 SessionMiddleware::builder(CookieSessionStore::default(), key.clone())
-                    .cookie_secure(false)
+                    .cookie_secure(true)
                     .cookie_same_site(SameSite::Lax)
                     .cookie_http_only(true) // 🔒 禁止 JS 读取，防御 Session 劫持
                     .build()
