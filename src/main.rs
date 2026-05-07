@@ -482,6 +482,7 @@ async fn delete_message(db: web::Data<SqlitePool>, id: web::Path<i64>, session: 
 ///     04.30.2026维护数据库链接
 ///     05.03.2026增加登录和注册逻辑,新增自动建表字段
 ///     05.03.2026修复移动端网页跳转问题
+///     05.07.2026动态升级表结构增加raw_message字段
 #[actix_web::main]
 async fn main() -> io::Result<()> {
     // 基础环境准备
