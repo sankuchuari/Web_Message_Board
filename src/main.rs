@@ -39,7 +39,9 @@ fn markdown_to_html(input: &str) -> String {
 }
 
 // --- 账户验证处理 ---
-
+///日志：
+///     05.03.2026构建函数
+///     05.04.2026模糊化登录错误反馈
 #[post("/register")]
 async fn register_handler(db: web::Data<SqlitePool>, form: web::Form<AuthForm>) -> impl Responder {
     if form.username.len() > 32 || form.password.len() > 128 {
