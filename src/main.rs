@@ -38,6 +38,12 @@ struct AuthForm {
     password: String,
 }
 
+/// 消息编辑表单接收模型
+#[derive(serde::Deserialize)]
+struct EditForm {
+    message: String,
+}
+
 // --- Markdown 转 HTML ---
 ///日志：
 ///     04.26.2026重构函数
