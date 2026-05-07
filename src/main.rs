@@ -443,6 +443,10 @@ async fn post_message(mut payload: Multipart, db: web::Data<SqlitePool>, session
     HttpResponse::SeeOther().append_header(("Location", "/")).finish()
 }
 
+// --- 消息删除 ---
+///日志：
+///     04.26.2026重构函数
+///     05.04.2026修复IDOR漏洞
 #[post("/delete/{id}")]
 async fn delete_message(db: web::Data<SqlitePool>, id: web::Path<i64>, session: Session) -> impl Responder {
     if let Some(user) = session.get::<String>("user").ok().flatten() {
