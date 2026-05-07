@@ -493,6 +493,9 @@ async fn main() -> io::Result<()> {
     sqlx::query("CREATE TABLE IF NOT EXISTS users (username TEXT PRIMARY KEY, password_hash TEXT NOT NULL)").execute(&db).await.ok();
     sqlx::query("CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, message TEXT NOT NULL, image_path TEXT, video_path TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)").execute(&db).await.ok();
 
+    // 自动升级表结构：增加 raw_message 字段（如果不存在）
+    let _ = sqlx::query("ALTER TABLE messages ADD COLUMN raw_message TEXT").execute(&db).await;
+
     // Session 密钥生成（生产环境应从配置文件读取固定密钥）
     let key = Key::generate();
     println!("Server ready at http://localhost:6790");
