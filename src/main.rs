@@ -346,6 +346,33 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                         document.querySelectorAll(".i18n-view").forEach(el => el.textContent = t.view);
                     }
 
+                    // 编辑功能处理
+                    function editMsg(id) {
+                        const container = document.getElementById(`msg-text-${id}`);
+                        if (container.querySelector('textarea')) return;
+                        const rawContent = container.getAttribute("data-raw");
+                        const lang = localStorage.getItem("lang") || "en";
+                        const t = i18n[lang];
+                        container.innerHTML = `
+                            <textarea id="edit-area-${id}" class="input-box" style="width:100%; min-height:100px; border:1px solid rgba(110,142,251,0.3); border-radius:12px; padding:10px;">${rawContent}</textarea>
+                            <div style="display:flex; gap:10px; margin-top:10px;">
+                                <button class="btn-submit" style="padding:5px 15px; font-size:0.8rem;" onclick="saveEdit(${id})">${t.save}</button>
+                                <button class="ctrl-btn" style="padding:5px 15px; font-size:0.8rem; background:rgba(0,0,0,0.1);" onclick="location.reload()">${t.cancel}</button>
+                            </div>
+                        `;
+                    }
+
+                    async function saveEdit(id) {
+                        const newText = document.getElementById(`edit-area-${id}`).value;
+                        const formData = new URLSearchParams();
+                        formData.append('message', newText);
+                        try {
+                            const res = await fetch(`/edit/${id}`, { method: 'POST', body: formData });
+                            if (res.ok) location.reload();
+                            else alert("Edit failed");
+                        } catch (err) { console.error(err); }
+                    }
+
                     // 接管登录注册表单提交，实现无刷新反馈
                     document.addEventListener("submit", async (e) => {
                         const form = e.target;
