@@ -390,6 +390,12 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
     HttpResponse::Ok().content_type("text/html").body(markup.into_string())
 }
 
+// --- 消息操作处理 ---
+///日志：
+///     04.26.2026重构函数
+///     04.30.2026扩充文件支持范围
+///     05.03.2026优化用户名处理逻辑
+///     05.04.2025修复存储型XSS漏洞
 #[post("/post")]
 async fn post_message(mut payload: Multipart, db: web::Data<SqlitePool>, session: Session) -> impl Responder {
     let user = match session.get::<String>("user").ok().flatten() {
