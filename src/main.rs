@@ -457,8 +457,8 @@ async fn post_message(mut payload: Multipart, db: web::Data<SqlitePool>, session
         let safe_message = clean(&message);
         let img_str = if images.is_empty() { None } else { Some(images.join(",")) };
         let other_str = if others.is_empty() { None } else { Some(others.join(",")) };
-        let _ = sqlx::query("INSERT INTO messages (name, message, image_path, video_path) VALUES (?, ?, ?, ?)")
-            .bind(user).bind(safe_message).bind(img_str).bind(other_str).execute(db.get_ref()).await;
+        let _ = sqlx::query("INSERT INTO messages (name, message, raw_message, image_path, video_path) VALUES (?, ?, ?, ?, ?)")
+            .bind(user).bind(safe_html).bind(message).bind(img_str).bind(other_str).execute(db.get_ref()).await;
     }
     HttpResponse::SeeOther().append_header(("Location", "/")).finish()
 }
