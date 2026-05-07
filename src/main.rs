@@ -508,7 +508,13 @@ async fn main() -> io::Result<()> {
                     .build()
             )
             // 路由注册
-            .service(index).service(login_handler).service(register_handler).service(logout_handler).service(post_message).service(delete_message)
+            .service(index)
+            .service(login_handler)
+            .service(register_handler)
+            .service(logout_handler)
+            .service(post_message)
+            .service(edit_message) // 注册编辑路由
+            .service(delete_message)
             // 静态资源与上传目录托管
             .service(Files::new("/uploads", "uploads"))
             .service(Files::new("/static", "static"))
