@@ -21,7 +21,7 @@ struct StoredMessage {
     id: i64,
     //用户名
     name: String,
-    //文本内容
+    //渲染后的HTML文本内容
     message: String,
     //原始Markdown源码
     raw_message: String,
