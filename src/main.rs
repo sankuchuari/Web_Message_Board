@@ -33,7 +33,7 @@ struct StoredMessage {
     created_at: String,
 }
 
-/// 登录与注册表单的接收模型
+/// 登录与注册表单接收模型
 #[derive(serde::Deserialize)]
 struct AuthForm {
     username: String,
