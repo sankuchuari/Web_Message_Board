@@ -48,7 +48,7 @@ struct EditForm {
 
 // --- Markdown 转 HTML ---
 ///日志：
-///     04.26.2026重构函数
+///     04.26.2025构建函数
 ///     05.04.2025修复XSS漏洞
 // 修复 XSS：Markdown 转 HTML 后必须经过 ammonia 清洗
 fn markdown_to_html(input: &str) -> String {
