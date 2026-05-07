@@ -128,7 +128,7 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
     // 获取当前登录用户名
     let current_user = session.get::<String>("user").unwrap_or(None);
     // 从数据库查询所有留言
-    let messages = sqlx::query("SELECT id, name, message, image_path, video_path, created_at FROM messages ORDER BY id DESC")
+    let messages = sqlx::query("SELECT id, name, message, raw_message, image_path, video_path, created_at FROM messages ORDER BY id DESC")
         .map(|row: SqliteRow| {
             let time_str: String = row.try_get("created_at").unwrap_or_else(|_| "刚刚".to_string());
             StoredMessage {
