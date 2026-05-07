@@ -65,6 +65,10 @@ async fn register_handler(db: web::Data<SqlitePool>, form: web::Form<AuthForm>) 
     }
 }
 
+// --- 登录处理 ---
+///日志：
+///     05.03.2026构建函数
+///     05.04.2026限制登录频率
 #[post("/login")]
 async fn login_handler(db: web::Data<SqlitePool>, session: Session, form: web::Form<AuthForm>) -> impl Responder {
     let delay = rand::thread_rng().gen_range(100..500);
