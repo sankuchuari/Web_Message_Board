@@ -282,9 +282,8 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                                         }
                                     }
                                 }
-                                // XSS 修复点：markdown_to_html 内部现在会调用 ammonia::clean
-                                // 渲染经过 Markdown 处理和防 XSS 清洗后的内容
-                                div style="line-height:1.6; margin-top:10px;" { (PreEscaped(markdown_to_html(&msg.message))) }
+                                // 将渲染后的 HTML 放入 div，并将原始源码存入 data-raw 属性以便编辑
+                                div id=(format!("msg-text-{}", msg.id)) data-raw=(msg.raw_message) style="line-height:1.6; margin-top:10px;" { (PreEscaped(&msg.message)) }
                                 span class="time" { (msg.created_at) }
                             }
                         }
