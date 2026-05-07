@@ -463,6 +463,20 @@ async fn post_message(mut payload: Multipart, db: web::Data<SqlitePool>, session
     HttpResponse::SeeOther().append_header(("Location", "/")).finish()
 }
 
+// --- 消息编辑处理 ---
+///日志：
+///     05.07.2026构建函数支持Markdown源码更新
+#[post("/edit/{id}")]
+async fn edit_message(db: web::Data<SqlitePool>, id: web::Path<i64>, session: Session, form: web::Form<EditForm>) -> impl Responder {
+    if let Some(user) = session.get::<String>("user").ok().flatten() {
+        let safe_html = markdown_to_html(&form.message);
+        let _ = sqlx::query("UPDATE messages SET message = ?, raw_message = ? WHERE id = ? AND name = ?")
+            .bind(safe_html).bind(&form.message).bind(*id).bind(user).execute(db.get_ref()).await;
+        return HttpResponse::Ok().body("success");
+    }
+    HttpResponse::Unauthorized().finish()
+}
+
 // --- 消息删除 ---
 ///日志：
 ///     04.26.2026重构函数
