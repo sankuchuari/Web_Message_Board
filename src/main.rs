@@ -343,6 +343,7 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                         const emptyH = document.getElementById("empty-hint"); if(emptyH) emptyH.textContent = t.empty;
 
                         document.querySelectorAll(".i18n-del").forEach(el => el.textContent = t.del);
+                        document.querySelectorAll(".i18n-edit").forEach(el => el.textContent = t.edit);
                         document.querySelectorAll(".i18n-view").forEach(el => el.textContent = t.view);
                     }
 
