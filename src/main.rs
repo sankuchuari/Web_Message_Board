@@ -23,6 +23,8 @@ struct StoredMessage {
     name: String,
     //文本内容
     message: String,
+    //原始Markdown源码
+    raw_message: String,
     //图片UUID
     image_path: Option<String>,
     //视频&其他媒体UUID
