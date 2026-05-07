@@ -454,7 +454,7 @@ async fn post_message(mut payload: Multipart, db: web::Data<SqlitePool>, session
 
     if !message.trim().is_empty() || !images.is_empty() || !others.is_empty() {
         // XSS 防御：在存储前也进行一次清洗
-        let safe_message = clean(&message);
+        let safe_html = markdown_to_html(&message);
         let img_str = if images.is_empty() { None } else { Some(images.join(",")) };
         let other_str = if others.is_empty() { None } else { Some(others.join(",")) };
         let _ = sqlx::query("INSERT INTO messages (name, message, raw_message, image_path, video_path) VALUES (?, ?, ?, ?, ?)")
