@@ -184,7 +184,7 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                     .file-link { display: block; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); padding: 12px 15px; border-radius: 12px; margin: 10px 0; text-decoration: none; color: inherit; font-size: 0.85rem; border-left: 4px solid #6e8efb; }
                     .media { width: 100%; border-radius: 18px; margin: 12px 0; display: block; }
                     .time { font-size: 0.7rem; opacity: 0.4; text-align: right; display: block; margin-top: 15px; }
-                    .del-btn { float: right; color: #ff4757; border: none; background: none; cursor: pointer; opacity: 0.6; }
+                    .del-btn { color: #ff4757; border: none; background: none; cursor: pointer; opacity: 0.6; }
 
                     #toast {
                         visibility: hidden; min-width: 250px; background-color: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px);
