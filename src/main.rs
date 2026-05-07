@@ -135,6 +135,7 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                 id: row.get("id"),
                 name: row.get("name"),
                 message: row.get("message"),
+                raw_message: row.try_get("raw_message").unwrap_or_else(|_| "".to_string()),
                 image_path: row.get("image_path"),
                 video_path: row.get("video_path"),
                 created_at: if time_str.len() > 16 { time_str[..16].to_string() } else { time_str },
