@@ -11,18 +11,27 @@ use sanitize_filename::sanitize;
 use std::{fs, io::Write, path::Path, io, time::Duration};
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier, password_hash::SaltString};
 use rand::Rng;
-use ammonia::clean; // 引入 HTML 净化库
+use ammonia::clean;
 
 // --- 数据结构 ---
+
+/// 存储在数据库中的留言信息结构体
 struct StoredMessage {
+    //日志ID
     id: i64,
+    //用户名
     name: String,
+    //文本内容
     message: String,
+    //图片UUID
     image_path: Option<String>,
+    //视频&其他媒体UUID
     video_path: Option<String>,
+    //时间戳
     created_at: String,
 }
 
+/// 登录与注册表单的接收模型
 #[derive(serde::Deserialize)]
 struct AuthForm {
     username: String,
@@ -116,8 +125,9 @@ async fn logout_handler(session: Session) -> impl Responder {
 ///     05.03.2026增加登录UI、增加I18n双语逻辑
 #[get("/")]
 async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
+    // 获取当前登录用户名
     let current_user = session.get::<String>("user").unwrap_or(None);
-
+    // 从数据库查询所有留言
     let messages = sqlx::query("SELECT id, name, message, image_path, video_path, created_at FROM messages ORDER BY id DESC")
         .map(|row: SqliteRow| {
             let time_str: String = row.try_get("created_at").unwrap_or_else(|_| "刚刚".to_string());
@@ -132,6 +142,7 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
         })
         .fetch_all(db.get_ref()).await.unwrap_or_default();
 
+    // 构建页面模板
     let markup = html! {
         (DOCTYPE)
         html lang="zh-CN" {
@@ -193,6 +204,7 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                 "#)) }
             }
             body {
+                // 初始化暗色模式
                 script { (PreEscaped(r#"if(localStorage.getItem("theme")==="dark")document.body.classList.add("dark-mode");"#)) }
 
                 h1 id="main-title" { "MESSAGE BOARD" }
@@ -205,6 +217,7 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
 
                 div class="glass" {
                     @match current_user {
+                        // 未登录状态：显示登录注册表单
                         None => {
                             form id="auth-form" method="post" action="/login" {
                                 input type="text" name="username" id="login-user" class="input-box" placeholder="Username" required;
@@ -215,6 +228,7 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                                 }
                             }
                         }
+                        // 已登录状态：显示发布留言表单
                         Some(ref user) => {
                             form method="post" action="/post" enctype="multipart/form-data" {
                                 input type="text" name="user_name" class="input-box" value=(user) readonly;
@@ -232,6 +246,7 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                     }
                 }
 
+                // 只有登录用户可查看和管理留言
                 @if let Some(ref user) = current_user {
                     h2 id="list-header" style="color:white; font-weight:200; margin-bottom:15px; width:100%; max-width:500px;" { "Message list：" }
 
@@ -268,6 +283,7 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                                     }
                                 }
                                 // XSS 修复点：markdown_to_html 内部现在会调用 ammonia::clean
+                                // 渲染经过 Markdown 处理和防 XSS 清洗后的内容
                                 div style="line-height:1.6; margin-top:10px;" { (PreEscaped(markdown_to_html(&msg.message))) }
                                 span class="time" { (msg.created_at) }
                             }
@@ -277,6 +293,7 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
 
                 div id="toast" {}
 
+                // 客户端脚本：处理 i18n、主题切换、表单异步提交及动态 UI 效果
                 script { (PreEscaped(r#"
                     const i18n = {
                         en: {
@@ -329,6 +346,7 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                         document.querySelectorAll(".i18n-view").forEach(el => el.textContent = t.view);
                     }
 
+                    // 接管登录注册表单提交，实现无刷新反馈
                     document.addEventListener("submit", async (e) => {
                         const form = e.target;
                         const action = e.submitter ? e.submitter.getAttribute("formaction") || form.getAttribute("action") : form.getAttribute("action");
@@ -369,9 +387,11 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
 
                     updateUI();
 
+                    // 输入框自动高度调整
                     const ta = document.getElementById("grow-text");
                     if(ta) ta.addEventListener("input", function() { this.style.height="auto"; this.style.height=this.scrollHeight+"px"; });
 
+                    // 文件预览列表刷新
                     const fileInput = document.getElementById("file-input");
                     const fileList = document.getElementById("file-list");
                     if(fileInput) fileInput.addEventListener("change", function() {
@@ -464,26 +484,36 @@ async fn delete_message(db: web::Data<SqlitePool>, id: web::Path<i64>, session: 
 ///     05.03.2026修复移动端网页跳转问题
 #[actix_web::main]
 async fn main() -> io::Result<()> {
+    // 基础环境准备
     let _ = fs::create_dir_all("uploads");
     let db_url = format!("sqlite://{}", std::env::current_dir()?.join("guestbook.db").display());
     let db = SqlitePool::connect(&db_url).await.expect("数据库启动失败");
 
+    // 自动建表
     sqlx::query("CREATE TABLE IF NOT EXISTS users (username TEXT PRIMARY KEY, password_hash TEXT NOT NULL)").execute(&db).await.ok();
     sqlx::query("CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, message TEXT NOT NULL, image_path TEXT, video_path TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)").execute(&db).await.ok();
 
+    // Session 密钥生成（生产环境应从配置文件读取固定密钥）
     let key = Key::generate();
-    println!("🚀 Server ready at http://localhost:6790");
+    println!("Server ready at http://localhost:6790");
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(db.clone()))
+            // Session 配置
             .wrap(
                 SessionMiddleware::builder(CookieSessionStore::default(), key.clone())
-                    .cookie_secure(true)
-                    .cookie_same_site(SameSite::Lax)
-                    .cookie_http_only(true) // 🔒 禁止 JS 读取，防御 Session 劫持
+                    .cookie_secure(true)// 仅通过 HTTPS 传输
+                    .cookie_same_site(SameSite::Lax)// 缓解 CSRF 攻击
+                    .cookie_http_only(true) // 禁止客户端 JS 读取 Session Cookie，防御 XSS 劫持
                     .build()
             )
+            // 路由注册
             .service(index).service(login_handler).service(register_handler).service(logout_handler).service(post_message).service(delete_message)
-            .service(Files::new("/uploads", "uploads")).service(Files::new("/static", "static"))
-    }).bind("0.0.0.0:6790")?.bind("[::]:6790")?.run().await
+            // 静态资源与上传目录托管
+            .service(Files::new("/uploads", "uploads"))
+            .service(Files::new("/static", "static"))
+    }).bind("0.0.0.0:6790")?
+        .bind("[::]:6790")?
+        .run()
+        .await
 }
