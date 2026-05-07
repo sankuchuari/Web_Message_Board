@@ -256,7 +256,11 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                         @for msg in &messages {
                             div class="glass" {
                                 @if msg.name == *user {
-                                    form method="post" action=(format!("/delete/{}", msg.id)) { button type="submit" class="del-btn i18n-del" { "delete" } }
+                                    div style="float: right; display: flex; gap: 10px;" {
+                                        // 新增编辑按钮
+                                        button type="button" class="del-btn i18n-edit" onclick=(format!("editMsg({})", msg.id)) { "edit" }
+                                        form method="post" action=(format!("/delete/{}", msg.id)) { button type="submit" class="del-btn i18n-del" { "delete" } }
+                                    }
                                 }
                                 h3 { (msg.name) }
                                 div {
