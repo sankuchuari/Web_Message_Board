@@ -301,7 +301,8 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                             loginUser: "Username", loginPass: "Password",
                             signin: "Sign In", signup: "Sign Up", logout: "🚪 Logout",
                             textPh: "Write some...", submit: "Submit", list: "Message list：",
-                            del: "delete", empty: "No messages yet. Be the first!", view: "📄 View File: ",
+                            del: "delete", edit: "edit", save: "save", cancel: "cancel",
+                            empty: "No messages yet. Be the first!", view: "📄 View File: ",
                             tipSuccess: "✅ Login successful!", tipNoUser: "❌ Incorrect username or password.", tipWrong: "❌ Incorrect username or password.", tipReg: "📝 Registration successful! Now please Sign In.", tipConflict: "⚠️ Username already exists."
                         },
                         zh: {
