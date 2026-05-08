@@ -55,7 +55,7 @@ fn markdown_to_html(input: &str) -> String {
     let mut html_output = String::new();
     let parser = Parser::new_ext(input, Options::all());
     push_html(&mut html_output, parser);
-    // 过滤掉所有 script, onerror, style 等危险标签 and 属性
+    // 使用 ammonia 清洗 HTML，防止存储型 XSS
     clean(&html_output)
 }
 
