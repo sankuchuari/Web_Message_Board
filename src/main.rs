@@ -12,6 +12,9 @@ use std::{fs, io::Write, path::Path, io, time::Duration};
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier, password_hash::SaltString};
 use rand::Rng;
 use ammonia::clean;
+use std::process::Command;
+use rustls::{ServerConfig, Certificate, PrivateKey};
+use rustls_pemfile::{certs, pkcs8_private_keys};
 
 // --- 数据结构 ---
 
