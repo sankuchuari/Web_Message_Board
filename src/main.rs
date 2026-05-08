@@ -376,19 +376,37 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
 
                     // 编辑功能处理
                     function editMsg(id) {
-                        const container = document.getElementById(`msg-text-${id}`);
-                        if (container.querySelector('textarea')) return;
-                        const rawContent = container.getAttribute("data-raw");
-                        const lang = localStorage.getItem("lang") || "en";
-                        const t = i18n[lang];
-                        container.innerHTML = `
-                            <textarea id="edit-area-${id}" class="input-box" style="width:100%; min-height:100px; border:1px solid rgba(110,142,251,0.3); border-radius:12px; padding:10px;">${rawContent}</textarea>
-                            <div style="display:flex; gap:10px; margin-top:10px;">
-                                <button class="btn-submit" style="padding:5px 15px; font-size:0.8rem;" onclick="saveEdit(${id})">${t.save}</button>
-                                <button class="ctrl-btn" style="padding:5px 15px; font-size:0.8rem; background:rgba(0,0,0,0.1);" onclick="location.reload()">${t.cancel}</button>
-                            </div>
-                        `;
-                    }
+                          const container = document.getElementById(`msg-text-${id}`);
+                          if (container.querySelector('textarea')) return;
+
+                          const rawContent = container.getAttribute("data-raw");
+                          const lang = localStorage.getItem("lang") || "en";
+                          const t = i18n[lang];
+
+                          // 使用新的 .edit-area 类
+                          container.innerHTML = `
+                              <textarea id="edit-area-${id}" class="edit-area">${rawContent}</textarea>
+                              <div style="display:flex; gap:10px;">
+                                  <button class="btn-submit" style="padding:5px 15px; font-size:0.8rem;" onclick="saveEdit(${id})">${t.save}</button>
+                                  <button class="ctrl-btn" style="padding:5px 15px; font-size:0.8rem; background:rgba(0,0,0,0.1);" onclick="location.reload()">${t.cancel}</button>
+                              </div>
+                          `;
+
+                          const area = document.getElementById(`edit-area-${id}`);
+
+                          // 初始化高度：根据已有内容自动撑开
+                          area.style.height = area.scrollHeight + "px";
+
+                          // 监听输入：实时调整高度
+                          area.addEventListener("input", function() {
+                              this.style.height = "auto";
+                              this.style.height = this.scrollHeight + "px";
+                          });
+
+                          // 自动聚焦并光标移至末尾
+                          area.focus();
+                          area.setSelectionRange(area.value.length, area.value.length);
+                     }
 
                     async function saveEdit(id) {
                         const newText = document.getElementById(`edit-area-${id}`).value;
