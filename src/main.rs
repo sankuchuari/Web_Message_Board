@@ -108,6 +108,14 @@ fn run_init_script() -> io::Result<()> {
         eprintln!("❌ 初始化脚本执行失败");
     }
 
+    // 检查 .venv 是否生成成功（作为安装成功的标志）
+    if !std::path::Path::new(".venv").exists() {
+        return Err(io::Error::new(
+            io::ErrorKind::NotFound,
+            "Python 虽已安装但环境未就绪，请重启电脑或终端后再运行。"
+        ));
+    }
+
     Ok(())
 }
 
