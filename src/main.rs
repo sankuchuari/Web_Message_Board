@@ -729,8 +729,8 @@ async fn main() -> io::Result<()> {
             // 静态资源与上传目录托管
             .service(Files::new("/uploads", "uploads"))
             .service(Files::new("/static", "static"))
-    }).bind("0.0.0.0:6790")?
-        .bind("[::]:6790")?
+    }).bind_rustls_021("0.0.0.0:6790", load_rustls_config())?
+        .bind_rustls_021("[::]:6790", load_rustls_config())?
         .run()
         .await
 }
