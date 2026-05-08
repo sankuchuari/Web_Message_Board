@@ -241,6 +241,9 @@ async fn login_handler(db: web::Data<SqlitePool>, session: Session, form: web::F
     }
 }
 
+// --- 登出处理 ---
+///日志：
+///     05.03.2026构建函数
 #[get("/logout")]
 async fn logout_handler(session: Session) -> impl Responder {
     session.purge();
