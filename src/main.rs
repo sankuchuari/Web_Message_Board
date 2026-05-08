@@ -128,7 +128,7 @@ fn run_python_setup() -> io::Result<()> {
     };
 
     // 检查本地 Python 是否存在，不存在则报错提醒
-    if !std::path::Path::new(python_path).exists() {
+    if !Path::new(python_path).exists() {
         return Err(io::Error::new(
             io::ErrorKind::NotFound,
             "未找到虚拟环境！请先运行 'python -m venv .venv' 并安装依赖。"
