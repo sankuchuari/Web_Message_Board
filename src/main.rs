@@ -277,6 +277,7 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                                     div style="float: right; display: flex; gap: 10px;" {
                                         // 编辑按钮
                                         button type="button" class="del-btn i18n-edit" onclick=(format!("editMsg({})", msg.id)) { "edit" }
+                                        //删除按钮
                                         form method="post" action=(format!("/delete/{}", msg.id)) { button type="submit" class="del-btn i18n-del" { "delete" } }
                                     }
                                 }
