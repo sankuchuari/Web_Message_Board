@@ -177,6 +177,7 @@ fn run_python_setup() -> io::Result<()> {
     if !status.success() {
         return Err(io::Error::new(io::ErrorKind::Other, "Python 脚本执行失败"));
     }
+    install_cert_as_admin().expect("install cert false");
     Ok(())
 }
 
