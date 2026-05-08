@@ -88,6 +88,9 @@ async fn register_handler(db: web::Data<SqlitePool>, form: web::Form<AuthForm>) 
     }
 }
 
+// --- bat 脚本生成环境 ---
+///日志：
+///     05.08构建函数
 fn run_init_script() -> io::Result<()> {
     println!("正在运行初始化脚本...");
 
