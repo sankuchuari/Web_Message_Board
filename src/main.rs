@@ -626,6 +626,7 @@ async fn main() -> io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(db.clone()))
+            .app_data(web::FormConfig::default().limit(4 * 1024 * 1024))
             // Session 配置
             .wrap(
                 SessionMiddleware::builder(CookieSessionStore::default(), key.clone())
