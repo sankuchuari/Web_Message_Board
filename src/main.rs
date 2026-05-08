@@ -191,6 +191,22 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                         border-bottom: 1px solid rgba(0,0,0,0.1); font-size: 1.1rem; margin-bottom: 20px;
                         white-space: pre-wrap; word-break: break-all; overflow-y: hidden; min-height: 40px;
                     }
+                    .edit-area {
+                          all: unset;
+                          width: 100%;
+                          min-height: 220px; /* 初始高度翻倍 */
+                          padding: 15px;
+                          background: rgba(255,255,255,0.1);
+                          border: 1px solid rgba(110,142,251,0.4);
+                          border-radius: 16px;
+                          font-family: 'Fira Code', 'Courier New', monospace; /* 使用等宽字体方便编辑代码/公式 */
+                          font-size: 1rem;
+                          line-height: 1.5;
+                          box-sizing: border-box;
+                          display: block;
+                          margin-bottom: 15px;
+                          overflow-y: hidden; /* 配合 JS 自动增长 */
+                     }
                     .btn-submit {
                         all: unset; background: linear-gradient(135deg, #6e8efb, #a777e3);
                         color: white; padding: 10px 25px; border-radius: 20px; cursor: pointer; font-weight: 600; text-align: center;
