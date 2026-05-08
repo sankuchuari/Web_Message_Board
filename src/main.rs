@@ -559,7 +559,13 @@ async fn post_message(mut payload: Multipart, db: web::Data<SqlitePool>, session
 ///日志：
 ///     05.07.2026构建函数支持Markdown源码更新
 #[post("/edit/{id}")]
-async fn edit_message(db: web::Data<SqlitePool>, id: web::Path<i64>, session: Session, form: web::Form<EditForm>) -> impl Responder {
+async fn edit_message(
+    db: web::Data<SqlitePool>,
+    id: web::Path<i64>,
+    session: Session,
+    // 使用 web::Payload 来手动处理或通过配置 FormConfig
+    form: web::Form<EditForm>
+) -> impl Responder {
     if let Some(user) = session.get::<String>("user").ok().flatten() {
         let safe_html = markdown_to_html(&form.message);
         let _ = sqlx::query("UPDATE messages SET message = ?, raw_message = ? WHERE id = ? AND name = ?")
