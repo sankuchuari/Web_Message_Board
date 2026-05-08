@@ -119,6 +119,33 @@ fn run_init_script() -> io::Result<()> {
     Ok(())
 }
 
+// --- SSL/TSL证书安装 ---
+///日志：
+///     05.08构建函数
+fn install_cert_as_admin() -> io::Result<()> {
+    println!("Requesting administrator privileges to install the certificate...");
+
+    // 使用 PowerShell 启动进程
+    // -Verb runAs 是关键，它会触发 UAC 弹窗
+    let status = Command::new("powershell")
+        .args([
+            "Start-Process",
+            "install_cert.bat",
+            "-Verb",
+            "runAs",
+            "-Wait" // 等待 .bat 执行完再继续 Rust 逻辑
+        ])
+        .status()?;
+
+    if status.success() {
+        println!("✅ Administrative task completed.");
+    } else {
+        eprintln!("❌ Failed to get administrator privileges.");
+    }
+
+    Ok(())
+}
+
 // --- Python 脚本生成证书 ---
 ///日志：
 ///     05.08构建函数
