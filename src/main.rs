@@ -713,7 +713,7 @@ async fn main() -> io::Result<()> {
             // Session 配置
             .wrap(
                 SessionMiddleware::builder(CookieSessionStore::default(), key.clone())
-                    .cookie_secure(false)// 仅通过 HTTPS 传输
+                    .cookie_secure(true)// 仅通过 HTTPS 传输
                     .cookie_same_site(SameSite::Lax)// 缓解 CSRF 攻击
                     .cookie_http_only(true) // 禁止客户端 JS 读取 Session Cookie，防御 XSS 劫持
                     .build()
