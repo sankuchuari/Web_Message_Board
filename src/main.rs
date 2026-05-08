@@ -241,6 +241,35 @@ async fn login_handler(db: web::Data<SqlitePool>, session: Session, form: web::F
     }
 }
 
+// --- 账户验证处理 ---
+///日志：
+///     05.03.2026构建函数
+///     05.04.2026模糊化登录错误反馈
+#[post("/register")]
+async fn register_handler(db: web::Data<SqlitePool>, form: web::Form<AuthForm>) -> impl Responder {
+    if form.username.len() > 32 || form.password.len() > 128 {
+        return HttpResponse::BadRequest().body("invalid_input");
+    }
+
+    let salt = SaltString::generate(&mut argon2::password_hash::rand_core::OsRng);
+    let argon2 = Argon2::default();
+    let password_hash = match argon2.hash_password(form.password.as_bytes(), &salt) {
+        Ok(h) => h.to_string(),
+        Err(_) => return HttpResponse::InternalServerError().finish(),
+    };
+
+    let result = sqlx::query("INSERT INTO users (username, password_hash) VALUES (?, ?)")
+        .bind(&form.username)
+        .bind(&password_hash)
+        .execute(db.get_ref())
+        .await;
+
+    match result {
+        Ok(_) => HttpResponse::Ok().body("registered"),
+        Err(_) => HttpResponse::Conflict().body("user_exists"),
+    }
+}
+
 // --- 登出处理 ---
 ///日志：
 ///     05.03.2026构建函数
