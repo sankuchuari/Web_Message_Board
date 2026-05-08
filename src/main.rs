@@ -568,13 +568,22 @@ async fn edit_message(
 ) -> impl Responder {
     if let Some(user) = session.get::<String>("user").ok().flatten() {
         let safe_html = markdown_to_html(&form.message);
-        let _ = sqlx::query("UPDATE messages SET message = ?, raw_message = ? WHERE id = ? AND name = ?")
-            .bind(safe_html).bind(&form.message).bind(*id).bind(user).execute(db.get_ref()).await;
-        return HttpResponse::Ok().body("success");
-    }
-    HttpResponse::Unauthorized().finish()
-}
+        let result = sqlx::query("UPDATE messages SET message = ?, raw_message = ? WHERE id = ? AND name = ?")
+            .bind(safe_html)
+            .bind(&form.message)
+            .bind(*id)
+            .bind(user)
+            .execute(db.get_ref())
+            .await;
 
+        match result {
+            Ok(_) => HttpResponse::Ok().body("success"),
+            Err(_) => HttpResponse::InternalServerError().body("db_error"),
+        }
+    } else {
+        HttpResponse::Unauthorized().finish()
+    }
+}
 // --- 消息删除 ---
 ///日志：
 ///     04.26.2025构建函数
