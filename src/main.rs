@@ -369,6 +369,9 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                         document.querySelectorAll(".i18n-del").forEach(el => el.textContent = t.del);
                         document.querySelectorAll(".i18n-edit").forEach(el => el.textContent = t.edit);
                         document.querySelectorAll(".i18n-view").forEach(el => el.textContent = t.view);
+
+                        // 每次UI更新后重新扫描渲染 LaTeX
+                        if(window.renderMathInElement) renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});
                     }
 
                     // 编辑功能处理
