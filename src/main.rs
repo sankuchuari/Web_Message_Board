@@ -133,6 +133,7 @@ async fn logout_handler(session: Session) -> impl Responder {
 ///     04.30.2026重构UI样式
 ///     05.03.2026增加登录UI、增加I18n双语逻辑
 ///     05.07.2026增加编辑UI逻辑
+///     05.08.2026增加LaTeX渲染逻辑
 #[get("/")]
 async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
     // 获取当前登录用户名
