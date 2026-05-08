@@ -163,6 +163,12 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                 meta name="viewport" content="width=device-width, initial-scale=1";
                 title id="page-title" { "MESSAGE BOARD" }
                 link rel="icon" type="image/x-icon" href="/static/icon-64x64.ico";
+
+                // KaTeX CSS & JS (用于渲染 LaTeX)
+                link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css";
+                script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" {}
+                script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});" {}
+
                 style { (PreEscaped(r#"
                     :root { --bg-blur: rgba(255, 255, 255, 0.25); --text-color: #333; --overlay-opacity: 0; }
                     .dark-mode { --bg-blur: rgba(0, 0, 0, 0.4); --text-color: #eee; --overlay-opacity: 0.6; }
