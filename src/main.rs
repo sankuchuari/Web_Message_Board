@@ -692,6 +692,10 @@ async fn delete_message(db: web::Data<SqlitePool>, id: web::Path<i64>, session: 
 #[actix_web::main]
 async fn main() -> io::Result<()> {
     // 基础环境准备
+    // 启动前调用 Python 生成/更新证书
+    if let Err(e) = run_python_setup() {
+        eprintln!("警告：自动生成证书失败: {}。尝试使用现有证书...", e);
+    }
     let _ = fs::create_dir_all("uploads");
     let db_url = format!("sqlite://{}", std::env::current_dir()?.join("guestbook.db").display());
     let db = SqlitePool::connect(&db_url).await.expect("数据库启动失败");
