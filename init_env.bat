@@ -1,41 +1,31 @@
 @echo off
-@echo off
-setlocal
+:: 设置字符集为 UTF-8 避免中文显示乱码（如果保存为 UTF-8 的话）
+:: chcp 65001 >nul
 
-:: 1. 检查 Python 是否安装
+echo [1/3] Checking Python environment...
 where python >nul 2>nul
-if %errorlevel% equ 0 (
-    echo [✓] 检测到 Python 已安装。
-) else (
-    echo [!] 未检测到 Python，准备自动安装...
-
-    :: 尝试使用 winget 安装 (Windows 10/11 自带)
-    :: --silent 表示静默安装，--scope machine 表示为所有用户安装
+if %errorlevel% neq 0 (
+    echo [!] Python not found. Installing via Winget...
     winget install --id Python.Python.3.12 --silent --scope machine
-
     if %errorlevel% neq 0 (
-        echo [X] 自动安装失败。请手动访问 python.org 安装。
+        echo [X] Installation failed. Please install Python manually from python.org
         pause
         exit /b 1
     )
-    echo [✓] Python 安装指令已发送，请稍等片刻后重启程序。
+    echo [!] Python installed. Please RESTART this program.
+    pause
+    exit /b 1
 )
 
-:: 2. 创建虚拟环境并安装依赖
-echo [1/3] 正在创建虚拟环境...
+echo [2/3] Creating virtual environment...
+:: 使用 python -m venv 创建，避免直接写中文在命令里
 python -m venv .venv
 
-echo [2/3] 正在升级 pip...
+echo [3/3] Installing dependencies...
 .\.venv\Scripts\python.exe -m pip install --upgrade pip
-
-echo [3/3] 正在根据 requirements.txt 安装依赖...
-if exist requirements.txt (
-    .\.venv\Scripts\pip.exe install -r requirements.txt
-) else (
-    echo 错误：未找到 requirements.txt，正在尝试直接安装 cryptography...
-    .\.venv\Scripts\pip.exe install cryptography
-)
+.\.venv\Scripts\pip.exe install cryptography
 
 echo ========================================
-echo ✅ 环境初始化完成！
-endlocal
+echo [OK] Environment initialized successfully!
+echo ========================================
+:: 如果你是通过 Rust 调用的，可以去掉 pause 让它自动返回
