@@ -22,8 +22,8 @@ echo [2/3] Creating virtual environment...
 python -m venv .venv
 
 echo [3/3] Installing dependencies...
-.\.venv\Scripts\python.exe -m pip install --upgrade pip
-.\.venv\Scripts\pip.exe install cryptography
+..\.venv\Scripts\python.exe -m pip install --upgrade pip
+..\.venv\Scripts\pip.exe install cryptography
 
 echo ========================================
 echo [OK] Environment initialized successfully!
