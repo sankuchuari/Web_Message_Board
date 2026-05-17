@@ -1,4 +1,5 @@
 use std::{fs, io};
+use std::os::windows::process::CommandExt;
 use std::path::Path;
 use std::process::Command;
 use rustls::{Certificate, PrivateKey, ServerConfig};
