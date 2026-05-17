@@ -24,7 +24,7 @@ use process_func::markdown_to_html;
 ///     05.03.2026构建函数
 ///     05.04.2026限制登录频率
 #[post("/login")]
-async fn login_handler(
+pub(crate) async fn login_handler(
     //数据库连接
     db: web::Data<SqlitePool>,
     //sessionKey
