@@ -451,7 +451,7 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                                                 } @else if ["mp3", "wav", "ogg", "m4a", "flac", "aac"].contains(&ext.as_str()) {
                                                     audio controls style="width:100%; margin:10px 0; height:40px;" { source src=(format!("/uploads/{}", path)); }
                                                 } @else {
-                                                    a class="file-link" href=(format!("/uploads/{}", path)) target="_blank" {
+                                                    a class="file-link" href="#" onclick=(format!("openPreview('/uploads/{}', '{}'); return false;", path, path)) {
                                                         span class="i18n-view" { "📄 View File: " } (path)
                                                     }
                                                 }
