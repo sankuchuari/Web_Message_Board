@@ -826,6 +826,7 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
 async fn post_message(
     //MultipartFile
     mut payload: Multipart,
+    //数据库连接
     db: web::Data<SqlitePool>,
     session: Session
 ) -> impl Responder {
