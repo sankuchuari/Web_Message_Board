@@ -832,7 +832,6 @@ async fn post_message(mut payload: Multipart, db: web::Data<SqlitePool>, session
     let mut message = String::new();
     let mut images = Vec::new();
     let mut others = Vec::new();
-
     while let Ok(Some(mut field)) = payload.try_next().await {
         let disp = field.content_disposition();
         let field_name = disp.get_name().unwrap_or("").to_string();
