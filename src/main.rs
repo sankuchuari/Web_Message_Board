@@ -925,7 +925,7 @@ async fn edit_message(
     id: web::Path<i64>,
     //sessionKey
     session: Session,
-    //拦截Edit的POST数据，反序列化后注入from
+    //拦截POST数据，反序列化后注入form
     form: web::Form<EditForm>
 ) -> impl Responder {
     if let Some(user) = session.get::<String>("user").ok().flatten() {
