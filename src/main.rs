@@ -510,7 +510,7 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                     }
 
                     function showToast(msg) {
-                        const t = document.getElementById("toast");
+                        const t = document.getElementById(\"toast\");
                         t.textContent = msg;
                         t.classList.remove("show");
                         void t.offsetWidth;
