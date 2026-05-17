@@ -46,10 +46,8 @@ fn install_cert_as_admin() -> io::Result<()> {
         .current_dir("./processes")
         .creation_flags(0x08000000)
         .args([
-            "-NoProfile",
-            "-WindowStyle", "Hidden",
-            "-Command",
-            "Start-Process 'install_cert.bat' -Verb runAs -Wait -WindowStyle Hidden",
+            "/c",
+            "powershell -NoProfile -Command \"Start-Process 'install_cert.bat' -Verb runas -Wait -WindowStyle Hidden\""
         ])
         .status()?;
 
