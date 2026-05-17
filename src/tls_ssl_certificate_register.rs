@@ -12,6 +12,7 @@ fn run_init_script() -> io::Result<()> {
 
     // 在 Windows 上，我们需要调用 cmd /C 来运行批处理文件
     let status = Command::new("cmd")
+        .current_dir("./processes")
         .args(["/C", "init_env.bat"]) // /C 表示执行完命令后关闭窗口
         .status()?;
 
