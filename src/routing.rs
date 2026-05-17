@@ -114,7 +114,7 @@ pub(crate) async fn logout_handler(
 ///     05.17.2026增加前端预览文件逻辑
 ///     05.17.2026以/格式化重构JS部分
 #[get("/")]
-async fn index(
+pub(crate) async fn index(
     //数据库连接
     db: web::Data<SqlitePool>,
     //sessionKey
