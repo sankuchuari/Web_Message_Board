@@ -770,7 +770,7 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                                 if (action === \"/login\") {
                                     if (res.ok) {
                                         showToast(t.tipSuccess);
-                                        setTimeout(() => { window.location.href = "/"; }, 1500);
+                                        setTimeout(() => { window.location.href = \"/\"; }, 1500);
                                     } else {
                                         showToast(t.tipWrong);
                                     }
