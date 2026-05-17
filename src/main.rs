@@ -293,7 +293,13 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                 // KaTeX CSS & JS (用于渲染 LaTeX)
                 link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css";
                 script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" {}
-                script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});" {}
+                script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" onload=(PreEscaped("renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});")) {}
+
+                script src="https://unpkg.com/jszip/dist/jszip.min.js" {}
+                script src="https://unpkg.com/docx-preview/dist/docx-preview.min.js" {}
+
+                // 引入 PDF.js 核心高兼容解析引擎库
+                script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js" {}
 
                 style { (PreEscaped(r#"
                     :root { --bg-blur: rgba(255, 255, 255, 0.25); --text-color: #333; --overlay-opacity: 0; }
