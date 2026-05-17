@@ -861,6 +861,7 @@ async fn post_message(mut payload: Multipart, db: web::Data<SqlitePool>, session
         let safe_html = markdown_to_html(&message);
         let img_str = if images.is_empty() { None } else { Some(images.join(",")) };
         let other_str = if others.is_empty() { None } else { Some(others.join(",")) };
+        //上传到数据库
         let _ = sqlx::query("INSERT INTO messages (name, message, raw_message, image_path, video_path) VALUES (?, ?, ?, ?, ?)")
             .bind(user)             //name
             .bind(safe_html)        //message
