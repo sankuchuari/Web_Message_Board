@@ -9,7 +9,7 @@ echo Certificate Auto-Installer for Windows
 echo ======================================================
 
 :: 1. Check if the certificate file exists in the CURRENT folder
-if not exist "../static/cert.pem" (
+if not exist "..\static\cert.pem" (
     echo [ERROR] cert.pem not found at: %cd%
     echo Please ensure the .pem file is in the same folder as this script.
     pause
@@ -18,7 +18,7 @@ if not exist "../static/cert.pem" (
 
 :: 2. Install the certificate
 echo [INFO] Installing cert.pem into Trusted Root Store...
-certutil -addstore -f "Root" "../static/cert.pem"
+certutil -addstore -f "Root" "..\static\cert.pem"
 
 if %errorlevel% equ 0 (
     echo.
