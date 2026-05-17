@@ -846,6 +846,7 @@ async fn post_message(mut payload: Multipart, db: web::Data<SqlitePool>, session
                     let ext = Path::new(&name).extension().and_then(|s| s.to_str()).unwrap_or("").to_lowercase();
                     let fname = format!("{}.{}", Uuid::new_v4(), sanitize(&ext));
                     let _ = fs::create_dir_all("uploads");
+                    //指定文件上传地址
                     let upload_path = format!("uploads/{}", fname);
                     //确保上传地址已创建后写入
                     if let Ok(mut f) = fs::File::create(&upload_path) {
