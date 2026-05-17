@@ -1,5 +1,5 @@
-mod TLS_SSL_certificate_register;
-mod structure;
+pub mod TLS_SSL_certificate_register;
+pub mod structure;
 pub mod process_func;
 use actix_web::{web, App, HttpServer, Responder, HttpResponse, get, post, cookie::Key, cookie::SameSite};
 use actix_session::{Session, SessionMiddleware, storage::CookieSessionStore};
