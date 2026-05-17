@@ -730,7 +730,8 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                                   \"<button class=\\\"ctrl-btn\\\" style=\\\"padding:5px 15px; font-size:0.8rem; background:rgba(0,0,0,0.1);\\\" onclick=\\\"location.reload()\\\">\" + t.cancel + \"</button>\" +
                               \"</div>\";
 
-                          const area = document.getElementById(`edit-area-${id}`);
+                          const area = document.getElementById(\"edit-area-\" + id);
+                          area.value = rawContent;
 
                           // 初始化高度：根据已有内容自动撑开
                           area.style.height = area.scrollHeight + "px";
