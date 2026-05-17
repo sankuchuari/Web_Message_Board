@@ -856,6 +856,7 @@ async fn post_message(mut payload: Multipart, db: web::Data<SqlitePool>, session
         }
     }
 
+    //数据库写入
     if !message.trim().is_empty() || !images.is_empty() || !others.is_empty() {
         // 文本数据
         let safe_html = markdown_to_html(&message);
