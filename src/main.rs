@@ -940,8 +940,8 @@ async fn main() -> io::Result<()> {
     println!("Server ready at https://localhost:6790");
     HttpServer::new(move || {
         App::new()
-            .app_data(web::Data::new(db.clone()))
-            .app_data(web::FormConfig::default().limit(4 * 1024 * 1024))
+            .app_data(web::Data::new(db.clone()))                           //预拷贝数据库链接
+            .app_data(web::FormConfig::default().limit(4 * 1024 * 1024))    //限制appdata数据块大小，保证编辑长文本时正常保存
             // Session 配置
             .wrap(
                 SessionMiddleware::builder(CookieSessionStore::default(), key.clone())
