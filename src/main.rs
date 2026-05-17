@@ -836,7 +836,6 @@ async fn post_message(mut payload: Multipart, db: web::Data<SqlitePool>, session
         let disp = field.content_disposition();
         let field_name = disp.get_name().unwrap_or("").to_string();
         let filename = disp.get_filename().map(|s| s.to_string());
-
         if field_name == "user_msg" {
             while let Ok(Some(chunk)) = field.try_next().await {
                 message.push_str(std::str::from_utf8(&chunk).unwrap_or(""));
