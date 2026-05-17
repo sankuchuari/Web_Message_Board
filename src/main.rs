@@ -526,10 +526,10 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                         document.getElementById(\"theme-toggle\").textContent = t.mode;
                         document.getElementById(\"lang-toggle\").textContent = t.lang;
 
-                        const lUser = document.getElementById("login-user"); if(lUser) lUser.placeholder = t.loginUser;
-                        const lPass = document.getElementById("login-pass"); if(lPass) lPass.placeholder = t.loginPass;
-                        const siBtn = document.getElementById("signin-btn"); if(siBtn) siBtn.textContent = t.signin;
-                        const suBtn = document.getElementById("signup-btn"); if(suBtn) suBtn.textContent = t.signup;
+                        const lUser = document.getElementById(\"login-user\"); if(lUser) lUser.placeholder = t.loginUser;
+                        const lPass = document.getElementById(\"login-pass\"); if(lPass) lPass.placeholder = t.loginPass;
+                        const siBtn = document.getElementById(\"signin-btn\"); if(siBtn) siBtn.textContent = t.signin;
+                        const suBtn = document.getElementById(\"signup-btn\"); if(suBtn) suBtn.textContent = t.signup;
 
                         const logout = document.getElementById("logout-btn"); if(logout) logout.textContent = t.logout;
                         const msgTa = document.getElementById("grow-text"); if(msgTa) msgTa.placeholder = t.textPh;
