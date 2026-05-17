@@ -260,7 +260,12 @@ async fn logout_handler(session: Session) -> impl Responder {
 ///     05.17.2026增加前端预览文件逻辑
 ///     05.17.2026以/格式化重构JS部分
 #[get("/")]
-async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
+async fn index(
+    //数据库连接
+    db: web::Data<SqlitePool>,
+    //sessionKey
+    session: Session
+) -> impl Responder {
     // 获取当前登录用户名
     let current_user = session.get::<String>("user").unwrap_or(None);
     // 从数据库查询所有留言
