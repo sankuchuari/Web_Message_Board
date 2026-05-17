@@ -719,8 +719,8 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                           const container = document.getElementById(\"msg-text-\" + id);
                           if (container.querySelector('textarea')) return;
 
-                          const rawContent = container.getAttribute("data-raw");
-                          const lang = localStorage.getItem("lang") || "en";
+                          const rawContent = container.getAttribute(\"data-raw\");
+                          const lang = localStorage.getItem(\"lang\") || \"en\";
                           const t = i18n[lang];
 
                           // 使用新的 .edit-area 类
