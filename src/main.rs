@@ -195,7 +195,7 @@ async fn login_handler(db: web::Data<SqlitePool>, session: Session, form: web::F
         .await;
     //缺失返回
     let auth_failed = HttpResponse::Unauthorized().body("wrong_credentials");
-
+    //判别正误
     match row {
         Ok(Some(row)) => {
             let hash: String = row.get("password_hash");
