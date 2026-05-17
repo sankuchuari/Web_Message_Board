@@ -757,7 +757,7 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
 
                     document.addEventListener(\"submit\", async (e) => {
                         const form = e.target;
-                        const action = e.submitter ? e.submitter.getAttribute("formaction") || form.getAttribute("action") : form.getAttribute("action");
+                        const action = e.submitter ? e.submitter.getAttribute(\"formaction\") || form.getAttribute(\"action\") : form.getAttribute(\"action\");
 
                         if (action === "/login" || action === "/register") {
                             e.preventDefault();
