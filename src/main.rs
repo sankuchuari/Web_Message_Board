@@ -217,7 +217,12 @@ async fn login_handler(db: web::Data<SqlitePool>, session: Session, form: web::F
 ///     05.03.2026构建函数
 ///     05.04.2026模糊化登录错误反馈
 #[post("/register")]
-async fn register_handler(db: web::Data<SqlitePool>, form: web::Form<AuthForm>) -> impl Responder {
+async fn register_handler(
+    //数据库连接
+    db: web::Data<SqlitePool>,
+    //拦截Edit的POST数据，反序列化后注入from
+    form: web::Form<AuthForm>
+) -> impl Responder {
     if form.username.len() > 32 || form.password.len() > 128 {
         return HttpResponse::BadRequest().body("invalid_input");
     }
