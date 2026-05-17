@@ -925,6 +925,7 @@ async fn main() -> io::Result<()> {
     if let Err(e) = run_python_setup() {
         eprintln!("警告：自动生成证书失败: {}。尝试使用现有证书...", e);
     }
+    //创建上传目录连接
     let _ = fs::create_dir_all("uploads");
     //创建数据库URL
     let db_url = format!("sqlite://{}", std::env::current_dir()?.join("guestbook.db").display());
