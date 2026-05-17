@@ -872,6 +872,7 @@ async fn post_message(mut payload: Multipart, db: web::Data<SqlitePool>, session
 ///     05.07.2026构建函数支持Markdown源码更新
 #[post("/edit/{id}")]
 async fn edit_message(
+    //数据库连接
     db: web::Data<SqlitePool>,
     //文件ID
     id: web::Path<i64>,
