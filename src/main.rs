@@ -803,8 +803,8 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                     if(fileInput) fileInput.addEventListener(\"change\", function() {
                         fileList.innerHTML = \"\";
                         Array.from(this.files).forEach(file => {
-                            const div = document.createElement("div");
-                            div.className = "file-item";
+                            const div = document.createElement(\"div\");
+                            div.className = \"file-item\";
                             div.textContent = file.name;
                             fileList.appendChild(div);
                         });
