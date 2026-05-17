@@ -937,7 +937,9 @@ async fn main() -> io::Result<()> {
 
     // Session 密钥生成（生产环境应从配置文件读取固定密钥）
     let key = Key::generate();
-    println!("Server ready at https://localhost:6790");
+    //提示运行地址
+    println!("Server ready at https://localhost:6790")
+    //运行HTTP服务
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(db.clone()))                           //预拷贝数据库链接
