@@ -723,14 +723,12 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                           const lang = localStorage.getItem(\"lang\") || \"en\";
                           const t = i18n[lang];
 
-                          // 使用新的 .edit-area 类
-                          container.innerHTML = `
-                              <textarea id="edit-area-${id}" class="edit-area">${rawContent}</textarea>
-                              <div style="display:flex; gap:10px;">
-                                  <button class="btn-submit" style="padding:5px 15px; font-size:0.8rem;" onclick="saveEdit(${id})">${t.save}</button>
-                                  <button class="ctrl-btn" style="padding:5px 15px; font-size:0.8rem; background:rgba(0,0,0,0.1);" onclick="location.reload()">${t.cancel}</button>
-                              </div>
-                          `;
+                          container.innerHTML =
+                              \"<textarea id=\\\"edit-area-\" + id + \"\\\" class=\\\"edit-area\\\"></textarea>\" +
+                              \"<div style=\\\"display:flex; gap:10px;\\\">\" +
+                                  \"<button class=\\\"btn-submit\\\" style=\\\"padding:5px 15px; font-size:0.8rem;\\\" onclick=\\\"saveEdit(\" + id + \")\\\">\" + t.save + \"</button>\" +
+                                  \"<button class=\\\"ctrl-btn\\\" style=\\\"padding:5px 15px; font-size:0.8rem; background:rgba(0,0,0,0.1);\\\" onclick=\\\"location.reload()\\\">\" + t.cancel + \"</button>\" +
+                              \"</div>\";
 
                           const area = document.getElementById(`edit-area-${id}`);
 
