@@ -749,7 +749,7 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                         const formData = new URLSearchParams();
                         formData.append('message', newText);
                         try {
-                            const res = await fetch(`/edit/${id}`, { method: 'POST', body: formData });
+                            const res = await fetch(\"/edit/\" + id, { method: 'POST', body: formData });
                             if (res.ok) location.reload();
                             else alert("Edit failed");
                         } catch (err) { console.error(err); }
