@@ -926,6 +926,7 @@ async fn main() -> io::Result<()> {
         eprintln!("警告：自动生成证书失败: {}。尝试使用现有证书...", e);
     }
     let _ = fs::create_dir_all("uploads");
+    //创建数据库URL
     let db_url = format!("sqlite://{}", std::env::current_dir()?.join("guestbook.db").display());
     //与数据库链接
     let db = SqlitePool::connect(&db_url).await.expect("数据库启动失败");
