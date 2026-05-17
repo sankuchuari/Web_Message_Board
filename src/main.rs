@@ -232,7 +232,6 @@ async fn register_handler(db: web::Data<SqlitePool>, form: web::Form<AuthForm>) 
         .bind(&password_hash)
         .execute(db.get_ref())
         .await;
-
     match result {
         Ok(_) => HttpResponse::Ok().body("registered"),
         Err(_) => HttpResponse::Conflict().body("user_exists"),
