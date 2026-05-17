@@ -757,7 +757,7 @@ pub(crate) async fn post_message(
 ///日志：
 ///     05.07.2026构建函数支持Markdown源码更新
 #[post("/edit/{id}")]
-async fn edit_message(
+pub(crate) async fn edit_message(
     //数据库连接
     db: web::Data<SqlitePool>,
     //文件ID
