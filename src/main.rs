@@ -519,7 +519,7 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                     }
 
                     function updateUI() {
-                        const lang = localStorage.getItem("lang") || "en";
+                        const lang = localStorage.getItem(\"lang\") || \"en\";
                         const t = i18n[lang];
                         document.getElementById("page-title").textContent = t.title;
                         document.getElementById("main-title").textContent = t.title;
