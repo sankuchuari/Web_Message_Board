@@ -902,6 +902,7 @@ async fn edit_message(
 ///     05.04.2026修复IDOR漏洞
 #[post("/delete/{id}")]
 async fn delete_message(db: web::Data<SqlitePool>, id: web::Path<i64>, session: Session) -> impl Responder {
+    //删除时校验用户名
     if let Some(user) = session.get::<String>("user").ok().flatten() {
         // 修复水平越权：SQL 语句中必须带上 name 校验
         let _ = sqlx::query("DELETE FROM messages WHERE id = ? AND name = ?").bind(*id).bind(user).execute(db.get_ref()).await;
