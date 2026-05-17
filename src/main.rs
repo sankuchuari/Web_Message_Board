@@ -873,6 +873,7 @@ async fn post_message(mut payload: Multipart, db: web::Data<SqlitePool>, session
 #[post("/edit/{id}")]
 async fn edit_message(
     db: web::Data<SqlitePool>,
+    //文件ID
     id: web::Path<i64>,
     //sessionKey
     session: Session,
