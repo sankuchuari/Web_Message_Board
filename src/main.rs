@@ -190,7 +190,7 @@ async fn login_handler(
     db: web::Data<SqlitePool>,
     //sessionKey
     session: Session,
-    //拦截POST数据，反序列化后注入from
+    //拦截POST数据，反序列化后注入form
     form: web::Form<AuthForm>
 ) -> impl Responder {
     let delay = rand::thread_rng().gen_range(100..500);
