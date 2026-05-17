@@ -28,5 +28,4 @@ if %errorlevel% equ 0 (
     echo [FAILED] Please right-click and select "Run as administrator".
 )
 
-pause
 endlocal
