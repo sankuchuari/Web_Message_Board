@@ -366,6 +366,13 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                         95% { bottom: 30px; opacity: 1; }
                         100% { bottom: -60px; opacity: 0; }
                     }
+
+                    /* PDF 专属渲染器控制面板样式 */
+                    .pdf-toolbar { display: flex; justify-content: center; align-items: center; gap: 12px; background: rgba(0,0,0,0.15); padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.15); color: white; font-size: 0.9rem; }
+                    .pdf-btn { background: rgba(255,255,255,0.2); border: none; color: white; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; transition: 0.2s; }
+                    .pdf-btn:hover { background: rgba(255,255,255,0.35); }
+                    .pdf-canvas-container { width: 100%; height: 100%; overflow: auto; display: flex; justify-content: center; align-items: flex-start; padding: 20px; box-sizing: border-box; }
+                    .dark-mode-pdf { filter: invert(0.9) hue-rotate(180deg); }
                 "#)) }
             }
             body {
