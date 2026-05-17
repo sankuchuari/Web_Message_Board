@@ -789,8 +789,8 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                     }
 
                     function toggleDarkMode() {
-                        const isDark = document.body.classList.toggle("dark-mode");
-                        localStorage.setItem("theme", isDark ? "dark" : "light");
+                        const isDark = document.body.classList.toggle(\"dark-mode\");
+                        localStorage.setItem(\"theme\", isDark ? \"dark\" : \"light\");
                     }
 
                     updateUI();
