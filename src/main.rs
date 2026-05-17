@@ -824,7 +824,12 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
 ///     05.03.2026优化用户名处理逻辑
 ///     05.04.2025修复存储型XSS漏洞
 #[post("/post")]
-async fn post_message(mut payload: Multipart, db: web::Data<SqlitePool>, session: Session) -> impl Responder {
+async fn post_message(
+    mut payload: Multipart,
+    db: web::Data<SqlitePool>,
+    session: Session
+) -> impl Responder {
+    //判别User
     let user = match session.get::<String>("user").ok().flatten() {
         Some(u) => u,
         None => return HttpResponse::SeeOther().append_header(("Location", "/")).finish(),
