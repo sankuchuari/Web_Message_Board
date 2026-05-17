@@ -188,7 +188,7 @@ fn load_rustls_config() -> ServerConfig {
 async fn login_handler(db: web::Data<SqlitePool>, session: Session, form: web::Form<AuthForm>) -> impl Responder {
     let delay = rand::thread_rng().gen_range(100..500);
     tokio::time::sleep(Duration::from_millis(delay)).await;
-
+    //获取用户对应原始数据
     let row = sqlx::query("SELECT password_hash FROM users WHERE username = ?")
         .bind(&form.username)
         .fetch_optional(db.get_ref())
