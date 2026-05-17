@@ -330,7 +330,7 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                           background: rgba(255,255,255,0.1);
                           border: 1px solid rgba(110,142,251,0.4);
                           border-radius: 16px;
-                          font-family: 'Fira Code', 'Courier New', monospace; /* 使用等宽字体方便编辑代码/公式 */
+                          font-family: 'Fira Code', 'Courier New', monospace;
                           font-size: 1rem;
                           line-height: 1.5;
                           box-sizing: border-box;
