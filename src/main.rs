@@ -809,7 +809,7 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                             fileList.appendChild(div);
                         });
                     });
-                "#)) }
+                ")) }
             }
         }
     };
