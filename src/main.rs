@@ -185,7 +185,14 @@ fn load_rustls_config() -> ServerConfig {
 ///     05.03.2026构建函数
 ///     05.04.2026限制登录频率
 #[post("/login")]
-async fn login_handler(db: web::Data<SqlitePool>, session: Session, form: web::Form<AuthForm>) -> impl Responder {
+async fn login_handler(
+    //数据库连接
+    db: web::Data<SqlitePool>,
+    //sessionKey
+    session: Session,
+    //拦截POST数据，反序列化后注入from
+    form: web::Form<AuthForm>
+) -> impl Responder {
     let delay = rand::thread_rng().gen_range(100..500);
     tokio::time::sleep(Duration::from_millis(delay)).await;
     //获取用户对应原始数据
