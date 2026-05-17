@@ -887,7 +887,6 @@ async fn edit_message(
             .bind(user)
             .execute(db.get_ref())
             .await;
-
         match result {
             Ok(_) => HttpResponse::Ok().body("success"),
             Err(_) => HttpResponse::InternalServerError().body("db_error"),
