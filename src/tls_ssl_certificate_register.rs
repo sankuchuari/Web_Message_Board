@@ -84,7 +84,7 @@ pub(crate)fn run_python_setup() -> io::Result<()> {
     }
 
     let status = Command::new(python_path) // 使用本地路径
-        .arg("setup_https.py")
+        .arg("./processes/setup_https.py")
         .status()?;
 
     if !status.success() {
