@@ -783,8 +783,8 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                     });
 
                     function toggleLang() {
-                        const current = localStorage.getItem("lang") || "en";
-                        localStorage.setItem("lang", current === "en" ? "zh" : "en");
+                        const current = localStorage.getItem(\"lang\") || \"en\";
+                        localStorage.setItem(\"lang\", current === \"en\" ? \"zh\" : \"en\");
                         updateUI();
                     }
 
