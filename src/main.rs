@@ -1,4 +1,5 @@
-pub mod {TLS_SSL_certificate_register,routing};
+pub mod TLS_SSL_certificate_register;
+pub mod routing;
 use actix_web::{cookie::Key, cookie::SameSite, web, App, HttpServer, Responder};
 use actix_session::{storage::CookieSessionStore, SessionMiddleware};
 use actix_files::Files;
