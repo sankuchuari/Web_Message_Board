@@ -733,13 +733,10 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                           const area = document.getElementById(\"edit-area-\" + id);
                           area.value = rawContent;
 
-                          // 初始化高度：根据已有内容自动撑开
-                          area.style.height = area.scrollHeight + "px";
-
-                          // 监听输入：实时调整高度
-                          area.addEventListener("input", function() {
-                              this.style.height = "auto";
-                              this.style.height = this.scrollHeight + "px";
+                          area.style.height = area.scrollHeight + \"px\";
+                          area.addEventListener(\"input\", function() {
+                              this.style.height = \"auto\";
+                              this.style.height = this.scrollHeight + \"px\";
                           });
 
                           // 自动聚焦并光标移至末尾
