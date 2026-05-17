@@ -88,7 +88,7 @@ def generate_ssl_files():
     )
 
     # 导出私钥 (不加密)
-    with open("key.pem", "wb") as f:
+    with open("./static/key.pem", "wb") as f:
         f.write(private_key.private_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PrivateFormat.PKCS8,
