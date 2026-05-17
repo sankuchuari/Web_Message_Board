@@ -302,8 +302,8 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                 script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js" {}
 
                 style { (PreEscaped(r#"
-                    :root { --bg-blur: rgba(255, 255, 255, 0.25); --text-color: #333; --overlay-opacity: 0; }
-                    .dark-mode { --bg-blur: rgba(0, 0, 0, 0.4); --text-color: #eee; --overlay-opacity: 0.6; }
+                    :root { --bg-blur: rgba(255, 255, 255, 0.25); --text-color: #333; --overlay-opacity: 0; --modal-header-bg: rgba(0,0,0,0.05); --modal-control-color: #ffffff; }
+                    .dark-mode { --bg-blur: rgba(0, 0, 0, 0.4); --text-color: #eee; --overlay-opacity: 0.6; --modal-header-bg: rgba(0,0,0,0.1); --modal-control-color: #ffffff; }
                     * { box-sizing: border-box; margin: 0; padding: 0; }
                     body {
                         min-height: 100vh; font-family: -apple-system, sans-serif;
