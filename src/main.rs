@@ -875,7 +875,7 @@ async fn edit_message(
     db: web::Data<SqlitePool>,
     id: web::Path<i64>,
     session: Session,
-    // 使用 web::Payload 来手动处理或通过配置 FormConfig
+    //拦截Edit的POST数据，反序列化后注入from
     form: web::Form<EditForm>
 ) -> impl Responder {
     if let Some(user) = session.get::<String>("user").ok().flatten() {
