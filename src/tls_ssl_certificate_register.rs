@@ -40,7 +40,6 @@ fn run_init_script() -> io::Result<()> {
 fn install_cert_as_admin() -> io::Result<()> {
     println!("Requesting administrator privileges to install the certificate...");
 
-    // 使用 PowerShell 启动进程
     // -Verb runAs 是关键，它会触发 UAC 弹窗
     let status = Command::new("cmd")
         .current_dir("./processes")
