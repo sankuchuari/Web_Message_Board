@@ -824,6 +824,7 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
 ///     05.04.2025修复存储型XSS漏洞
 #[post("/post")]
 async fn post_message(
+    //MultipartFile
     mut payload: Multipart,
     db: web::Data<SqlitePool>,
     session: Session
