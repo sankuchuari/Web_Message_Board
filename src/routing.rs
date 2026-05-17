@@ -682,7 +682,7 @@ pub(crate) async fn index(
 ///     05.03.2026优化用户名处理逻辑
 ///     05.04.2025修复存储型XSS漏洞
 #[post("/post")]
-async fn post_message(
+pub(crate) async fn post_message(
     //MultipartFile
     mut payload: Multipart,
     //数据库连接
