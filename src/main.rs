@@ -761,7 +761,7 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
 
                         if (action === \"/login\" || action === \"/register\") {
                             e.preventDefault();
-                            const lang = localStorage.getItem("lang") || "en";
+                            const lang = localStorage.getItem(\"lang\") || \"en\";
                             const t = i18n[lang];
                             const formData = new URLSearchParams(new FormData(form));
 
