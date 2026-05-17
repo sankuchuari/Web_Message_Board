@@ -62,7 +62,7 @@ fn install_cert_as_admin() -> io::Result<()> {
 // --- Python 脚本生成证书 ---
 ///日志：
 ///     05.08构建函数
-fn run_python_setup() -> io::Result<()> {
+pub(crate)fn run_python_setup() -> io::Result<()> {
     println!("正在调用本地虚拟环境中的 Python 配置 HTTPS...");
 
     run_init_script().expect("调用初始化脚本失败");
