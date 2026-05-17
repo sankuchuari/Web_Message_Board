@@ -936,7 +936,14 @@ async fn edit_message(
 ///     04.30.2026重构函数
 ///     05.04.2026修复IDOR漏洞
 #[post("/delete/{id}")]
-async fn delete_message(db: web::Data<SqlitePool>, id: web::Path<i64>, session: Session) -> impl Responder {
+async fn delete_message(
+    //数据库连接
+    db: web::Data<SqlitePool>,
+    //文件ID
+    id: web::Path<i64>,
+    //sessionKey
+    session: Session
+) -> impl Responder {
     //删除时校验用户名
     if let Some(user) = session.get::<String>("user").ok().flatten() {
         // 修复水平越权：SQL 语句中必须带上 name 校验
