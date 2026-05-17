@@ -44,6 +44,7 @@ fn install_cert_as_admin() -> io::Result<()> {
     // -Verb runAs 是关键，它会触发 UAC 弹窗
     let status = Command::new("cmd")
         .current_dir("./processes")
+        .creation_flags(0x08000000)
         .args([
             "-NoProfile",
             "-WindowStyle", "Hidden",
