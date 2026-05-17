@@ -227,7 +227,6 @@ async fn register_handler(db: web::Data<SqlitePool>, form: web::Form<AuthForm>) 
         Ok(h) => h.to_string(),
         Err(_) => return HttpResponse::InternalServerError().finish(),
     };
-
     let result = sqlx::query("INSERT INTO users (username, password_hash) VALUES (?, ?)")
         .bind(&form.username)
         .bind(&password_hash)
