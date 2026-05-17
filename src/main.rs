@@ -504,6 +504,11 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                         }
                     };
 
+                    // 初始化 PDF.js Worker 线程
+                    if (window['pdfjs-dist/build/pdf']) {
+                        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+                    }
+
                     function showToast(msg) {
                         const t = document.getElementById("toast");
                         t.textContent = msg;
