@@ -336,7 +336,7 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                           box-sizing: border-box;
                           display: block;
                           margin-bottom: 15px;
-                          overflow-y: hidden; /* 配合 JS 自动增长 */
+                          overflow-y: hidden;
                      }
                     .btn-submit {
                         all: unset; background: linear-gradient(135deg, #6e8efb, #a777e3);
