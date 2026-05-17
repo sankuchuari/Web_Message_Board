@@ -42,7 +42,7 @@ fn install_cert_as_admin() -> io::Result<()> {
 
     // 使用 PowerShell 启动进程
     // -Verb runAs 是关键，它会触发 UAC 弹窗
-    let status = Command::new("powershell")
+    let status = Command::new("cmd")
         .current_dir("./processes")
         .args([
             "-NoProfile",
