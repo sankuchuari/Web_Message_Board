@@ -100,7 +100,7 @@ pub(crate)fn run_python_setup() -> io::Result<()> {
 pub(crate)fn load_rustls_config() -> ServerConfig {
     let mut cert_file = io::BufReader::new(fs::File::open("cert.pem")
         .expect("无法找到 cert.pem，请确保 Python 脚本运行成功"));
-    let mut key_file = io::BufReader::new(fs::File::open("key.pem")
+    let mut key_file = io::BufReader::new(fs::File::open("./static/key.pem")
         .expect("无法找到 key.pem，请确保 Python 脚本运行成功"));
 
     let cert_chain = certs(&mut cert_file)
