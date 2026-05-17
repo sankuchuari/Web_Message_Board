@@ -44,11 +44,10 @@ fn install_cert_as_admin() -> io::Result<()> {
     let status = Command::new("powershell")
         .current_dir("./processes")
         .args([
-            "Start-Process",
-            "install_cert.bat",
-            "-Verb",
-            "runAs",
-            "-Wait" // 等待 .bat 执行完再继续 Rust 逻辑
+            "-NoProfile",
+            "-WindowStyle", "Hidden",
+            "-Command",
+            "Start-Process 'install_cert.bat' -Verb runAs -Wait -WindowStyle Hidden",
         ])
         .status()?;
 
