@@ -755,8 +755,7 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                         } catch (err) { console.error(err); }
                     }
 
-                    // 接管登录注册表单提交，实现无刷新反馈
-                    document.addEventListener("submit", async (e) => {
+                    document.addEventListener(\"submit\", async (e) => {
                         const form = e.target;
                         const action = e.submitter ? e.submitter.getAttribute("formaction") || form.getAttribute("action") : form.getAttribute("action");
 
