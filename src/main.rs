@@ -795,9 +795,8 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
 
                     updateUI();
 
-                    // 输入框自动高度调整
-                    const ta = document.getElementById("grow-text");
-                    if(ta) ta.addEventListener("input", function() { this.style.height="auto"; this.style.height=this.scrollHeight+"px"; });
+                    const ta = document.getElementById(\"grow-text\");
+                    if(ta) ta.addEventListener(\"input\", function() { this.style.height=\"auto\"; this.style.height=this.scrollHeight+\"px\"; });
 
                     // 文件预览列表刷新
                     const fileInput = document.getElementById("file-input");
