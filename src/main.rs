@@ -840,7 +840,9 @@ async fn post_message(mut payload: Multipart, db: web::Data<SqlitePool>, session
             while let Ok(Some(chunk)) = field.try_next().await {
                 message.push_str(std::str::from_utf8(&chunk).unwrap_or(""));
             }
-        } else if field_name == "media" {
+        }
+        //处理媒体
+        else if field_name == "media" {
             if let Some(name) = filename {
                 if !name.is_empty() {
                     //获取文件格
