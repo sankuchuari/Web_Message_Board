@@ -254,7 +254,10 @@ async fn register_handler(
 ///日志：
 ///     05.03.2026构建函数
 #[get("/logout")]
-async fn logout_handler(session: Session) -> impl Responder {
+async fn logout_handler(
+    //sessionKey
+    session: Session
+) -> impl Responder {
     session.purge();
     HttpResponse::SeeOther().append_header(("Location", "/")).finish()
 }
