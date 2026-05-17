@@ -864,6 +864,7 @@ async fn post_message(mut payload: Multipart, db: web::Data<SqlitePool>, session
         let _ = sqlx::query("INSERT INTO messages (name, message, raw_message, image_path, video_path) VALUES (?, ?, ?, ?, ?)")
             .bind(user).bind(safe_html).bind(message).bind(img_str).bind(other_str).execute(db.get_ref()).await;
     }
+    //重定向到主目录
     HttpResponse::SeeOther().append_header(("Location", "/")).finish()
 }
 
