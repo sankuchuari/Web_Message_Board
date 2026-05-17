@@ -227,7 +227,7 @@ async fn login_handler(
 async fn register_handler(
     //数据库连接
     db: web::Data<SqlitePool>,
-    //拦截Edit的POST数据，反序列化后注入from
+    //拦截POST数据，反序列化后注入from
     form: web::Form<AuthForm>
 ) -> impl Responder {
     if form.username.len() > 32 || form.password.len() > 128 {
