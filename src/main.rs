@@ -759,7 +759,7 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                         const form = e.target;
                         const action = e.submitter ? e.submitter.getAttribute(\"formaction\") || form.getAttribute(\"action\") : form.getAttribute(\"action\");
 
-                        if (action === "/login" || action === "/register") {
+                        if (action === \"/login\" || action === \"/register\") {
                             e.preventDefault();
                             const lang = localStorage.getItem("lang") || "en";
                             const t = i18n[lang];
