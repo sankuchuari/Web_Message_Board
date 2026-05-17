@@ -324,9 +324,8 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                         white-space: pre-wrap; word-break: break-all; overflow-y: hidden; min-height: 40px;
                     }
                     .edit-area {
-                          all: unset;
-                          width: 100%;
-                          min-height: 220px; /* 初始高度翻倍 */
+                          all: unset; width: 100%;
+                          min-height: 220px;
                           padding: 15px;
                           background: rgba(255,255,255,0.1);
                           border: 1px solid rgba(110,142,251,0.4);
