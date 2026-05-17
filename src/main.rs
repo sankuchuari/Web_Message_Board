@@ -907,6 +907,7 @@ async fn delete_message(db: web::Data<SqlitePool>, id: web::Path<i64>, session: 
         // 修复水平越权：SQL 语句中必须带上 name 校验
         let _ = sqlx::query("DELETE FROM messages WHERE id = ? AND name = ?").bind(*id).bind(user).execute(db.get_ref()).await;
     }
+    //重定向到index
     HttpResponse::SeeOther().append_header(("Location", "/")).finish()
 }
 
