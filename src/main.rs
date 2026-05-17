@@ -716,7 +716,7 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                     });
 
                     function editMsg(id) {
-                          const container = document.getElementById(`msg-text-${id}`);
+                          const container = document.getElementById(\"msg-text-\" + id);
                           if (container.querySelector('textarea')) return;
 
                           const rawContent = container.getAttribute("data-raw");
