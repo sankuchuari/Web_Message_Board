@@ -828,6 +828,7 @@ async fn post_message(
     mut payload: Multipart,
     //数据库连接
     db: web::Data<SqlitePool>,
+    //sessionKey
     session: Session
 ) -> impl Responder {
     //判别User
