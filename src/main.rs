@@ -951,13 +951,13 @@ async fn main() -> io::Result<()> {
                     .build()
             )
             // 路由注册
-            .service(index)
-            .service(login_handler)
-            .service(register_handler)
-            .service(logout_handler)
-            .service(post_message)
-            .service(edit_message) // 注册编辑路由
-            .service(delete_message)
+            .service(index)             //根目录
+            .service(login_handler)     //登录管理
+            .service(register_handler)  //注册管理
+            .service(logout_handler)    //登出管理
+            .service(post_message)      //消息上传
+            .service(edit_message)      //消息编辑
+            .service(delete_message)    //消息删除
             // 静态资源与上传目录托管
             .service(Files::new("/uploads", "uploads"))
             .service(Files::new("/static", "static"))
