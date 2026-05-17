@@ -531,11 +531,11 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                         const siBtn = document.getElementById(\"signin-btn\"); if(siBtn) siBtn.textContent = t.signin;
                         const suBtn = document.getElementById(\"signup-btn\"); if(suBtn) suBtn.textContent = t.signup;
 
-                        const logout = document.getElementById("logout-btn"); if(logout) logout.textContent = t.logout;
-                        const msgTa = document.getElementById("grow-text"); if(msgTa) msgTa.placeholder = t.textPh;
-                        const subBtn = document.getElementById("btn-submit"); if(subBtn) subBtn.textContent = t.submit;
-                        const listH = document.getElementById("list-header"); if(listH) listH.textContent = t.list;
-                        const emptyH = document.getElementById("empty-hint"); if(emptyH) emptyH.textContent = t.empty;
+                        const logout = document.getElementById(\"logout-btn\"); if(logout) logout.textContent = t.logout;
+                        const msgTa = document.getElementById(\"grow-text\"); if(msgTa) msgTa.placeholder = t.textPh;
+                        const subBtn = document.getElementById(\"btn-submit\"); if(subBtn) subBtn.textContent = t.submit;
+                        const listH = document.getElementById(\"list-header\"); if(listH) listH.textContent = t.list;
+                        const emptyH = document.getElementById(\"empty-hint\"); if(emptyH) emptyH.textContent = t.empty;
 
                         document.querySelectorAll(".i18n-del").forEach(el => el.textContent = t.del);
                         document.querySelectorAll(".i18n-edit").forEach(el => el.textContent = t.edit);
