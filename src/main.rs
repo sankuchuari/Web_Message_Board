@@ -545,7 +545,176 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                         if(window.renderMathInElement) renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});
                     }
 
-                    // 编辑功能处理
+                    function openPreview(fileUrl, fileName) {
+                        const ext = fileName.split('.').pop().toLowerCase();
+                        const modal = document.getElementById(\"preview-modal\");
+                        const modalTitle = document.getElementById(\"modal-filename\");
+                        const downloadBtn = document.getElementById(\"modal-download-btn\");
+                        const modalBody = document.getElementById(\"modal-body\");
+
+                        modalTitle.textContent = fileName;
+                        downloadBtn.href = fileUrl;
+
+                        const lang = localStorage.getItem(\"lang\") || \"en\";
+
+                        if ([\"ppt\", \"pptx\"].includes(ext)) {
+                            const msg = lang === \"zh\" ? \"该文件 (\" + fileName + \") 为 PPT 格式，无法直接预览。是否下载？\" : \"The file (\" + fileName + \") is in PPT format and cannot be previewed. Download it?\";
+                            if (confirm(msg)) {
+                                const a = document.createElement('a');
+                                a.href = fileUrl;
+                                a.download = fileName;
+                                a.click();
+                            }
+                            return;
+                        }
+
+                        modalBody.innerHTML = \"\";
+
+                        const isDark = document.body.classList.contains(\"dark-mode\");
+                        const currentTextColor = isDark ? \"#ffffff\" : \"#222222\";
+                        const currentBgColor = isDark ? \"transparent\" : \"rgba(255, 255, 255, 0.95)\";
+
+                        if (ext === \"docx\") {
+                            modalBody.innerHTML =
+                                \"<div id=\\\"word-container\\\" style=\\\"width:100%; height:100%; overflow-y:auto; padding:35px; box-sizing:border-box; background:\" + currentBgColor + \"; transition: background 0.3s;\\\">\" +
+                                    \"<div id=\\\"word-loading\\\" style=\\\"color:\" + currentTextColor + \"; opacity: 0.8; text-align:center; padding-top:50px; font-size:1rem;\\\">⌛ 正在解析 Word 文档，请稍候...</div>\" +
+                                \"</div>\";
+                            modal.style.display = \"flex\";
+
+                            fetch(fileUrl)
+                                .then(res => { if (!res.ok) throw new Error(\"Fetch failed\"); return res.blob(); })
+                                .then(blob => {
+                                    const container = document.getElementById(\"word-container\");
+                                    docx.renderAsync(blob, container, null, {
+                                        className: \"docx\",
+                                        inWrapper: false,
+                                        ignoreWidth: true,
+                                        ignoreHeight: true,
+                                        ignorePadding: false
+                                    })
+                                    .then(() => {
+                                        const loadingEl = document.getElementById(\"word-loading\");
+                                        if (loadingEl) loadingEl.remove();
+
+                                        const allTexts = container.querySelectorAll(\"span, p, h1, h2, h3, h4, h5, h6, td\");
+                                        allTexts.forEach(el => {
+                                            if (!el.style.color || el.style.color === 'black' || el.style.color === 'rgb(0, 0, 0)' || el.style.color === '#000000') {
+                                                el.style.color = currentTextColor;
+                                            }
+                                        });
+                                        const allTables = container.querySelectorAll(\"table\");
+                                        allTables.forEach(table => {
+                                            table.style.backgroundColor = \"transparent\";
+                                            table.style.borderColor = isDark ? \"rgba(255, 255, 255, 0.25)\" : \"rgba(0, 0, 0, 0.15)\";
+                                        });
+                                    })
+                                    .catch(err => {
+                                        container.innerHTML = \"<div style=\\\"color:red; padding:20px; text-align:center;\\\">❌ 渲染失败: \" + err.message + \"</div>\";
+                                    });
+                                })
+                                .catch(() => {
+                                    modalBody.innerHTML = \"<div style=\\\"color:var(--text-color, #ffffff); padding:20px; text-align:center;\\\">❌ 文件加载失败</div>\";
+                                });
+                        }
+                        // 彻底切换为完全由前端沙盒渲染的 PDF.js 渲染引擎，摆脱浏览器和后端策略拦截
+                        else if (ext === \"pdf\") {
+                            modalBody.innerHTML =
+                                \"<div style='display:flex; flex-direction:column; height:100%; width:100%;'>\" +
+                                    \"<div class='pdf-toolbar'>\" +
+                                        \"<button class='pdf-btn' id='pdf-prev'>⬅️ Prev</button>\" +
+                                        \"<span>Page: <span id='pdf-num'>0</span> / <span id='pdf-count'>0</span></span>\" +
+                                        \"<button class='pdf-btn' id='pdf-next'>Next ➡️</button>\" +
+                                        \"<button class='pdf-btn' id='pdf-zoom-in'>➕</button>\" +
+                                        \"<button class='pdf-btn' id='pdf-zoom-out'>➖</button>\" +
+                                    \"</div>\" +
+                                    \"<div class='pdf-canvas-container' style='background:\" + (isDark ? \"#222\" : \"#ccc\") + \";'>\" +
+                                        \"<div id='pdf-loading' style='color:\" + (isDark?\"#fff\":\"#000\") + \"; margin:50px auto; text-align:center;'>⌛ Loading PDF...</div>\" +
+                                        \"<canvas id='pdf-canvas' class='\" + (isDark ? \"dark-mode-pdf\" : \"\") + \"' style='box-shadow:0 4px 12px rgba(0,0,0,0.3); display:none;'></canvas>\" +
+                                    \"</div>\" +
+                                \"</div>\";
+                            modal.style.display = \"flex\";
+
+                            let pdfDoc = null, pageNum = 1, pageRendering = false, pageNumPending = null, scale = 1.3;
+                            const canvas = document.getElementById('pdf-canvas'), ctx = canvas.getContext('2d');
+
+                            function renderPage(num) {
+                                pageRendering = true;
+                                pdfDoc.getPage(num).then((page) => {
+                                    const viewport = page.getViewport({ scale: scale });
+                                    canvas.height = viewport.height;
+                                    canvas.width = viewport.width;
+                                    canvas.style.display = 'block';
+                                    const loadingEl = document.getElementById('pdf-loading');
+                                    if(loadingEl) loadingEl.style.display = 'none';
+
+                                    const renderContext = { canvasContext: ctx, viewport: viewport };
+                                    const renderTask = page.render(renderContext);
+
+                                    renderTask.promise.then(() => {
+                                        pageRendering = false;
+                                        if (pageNumPending !== null) { renderPage(pageNumPending); pageNumPending = null; }
+                                    });
+                                });
+                                document.getElementById('pdf-num').textContent = num;
+                            }
+
+                            function queueRenderPage(num) {
+                                if (pageRendering) { pageNumPending = num; } else { renderPage(num); }
+                            }
+
+                            pdfjsLib.getDocument(fileUrl).promise.then((pdfDoc_) => {
+                                pdfDoc = pdfDoc_;
+                                document.getElementById('pdf-count').textContent = pdfDoc.numPages;
+                                renderPage(pageNum);
+                            }).catch(err => {
+                                const loadEl = document.getElementById('pdf-loading');
+                                if(loadEl) loadEl.textContent = \"❌ Failed to load PDF: \" + err.message;
+                            });
+
+                            document.getElementById('pdf-prev').addEventListener('click', () => { if (pageNum <= 1) return; pageNum--; queueRenderPage(pageNum); });
+                            document.getElementById('pdf-next').addEventListener('click', () => { if (pageNum >= pdfDoc.numPages) return; pageNum++; queueRenderPage(pageNum); });
+                            document.getElementById('pdf-zoom-in').addEventListener('click', () => { scale += 0.2; queueRenderPage(pageNum); });
+                            document.getElementById('pdf-zoom-out').addEventListener('click', () => { if(scale <= 0.6) return; scale -= 0.2; queueRenderPage(pageNum); });
+                        }
+                        else if ([\"txt\", \"log\", \"md\", \"json\", \"js\", \"rs\", \"html\", \"css\"].includes(ext)) {
+                            modalBody.innerHTML = \"<div style=\\\"color:var(--text-color); background:\" + currentBgColor + \"; padding:25px; font-family:monospace; white-space:pre-wrap; word-break:break-all; overflow-y:auto; height:100%; font-size: 0.95rem; transition: background 0.3s;\\\" id=\\\"text-loading\\\">加载中...</div>\";
+                            modal.style.display = \"flex\";
+
+                            fetch(fileUrl)
+                                .then(res => res.text())
+                                .then(text => {
+                                    const el = document.getElementById(\"text-loading\");
+                                    if(el) { el.textContent = text; el.id = \"\"; }
+                                })
+                                .catch(() => {
+                                    document.getElementById(\"text-loading\").textContent = \"无法读取文本内容\";
+                                });
+                        }
+                        else {
+                            const hintText = lang === \"zh\" ? \"该文件格式不支持在线预览，请下载后查看。\" : \"Preview is not supported for this file format, please download to view.\";
+                            const btnText = lang === \"zh\" ? \"下载文件\" : \"Download\";
+                            modalBody.innerHTML =
+                                \"<div style=\\\"display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:var(--text-color); background:\" + currentBgColor + \"; gap:20px; transition: background 0.3s;\\\">\" +
+                                    \"<span style=\\\"font-size:3rem;\\\">📄</span>\" +
+                                    \"<p style=\\\"opacity:0.7; font-size:0.95rem;\\\">\" + hintText + \"</p>\" +
+                                    \"<a href=\\\"\" + fileUrl + \"\\\" download style=\\\"all: unset; background: linear-gradient(135deg, #6e8efb, #a777e3); color: white; padding: 12px 30px; border-radius: 20px; cursor: pointer; font-weight: 600;\\\" >\" + btnText + \"</a>\" +
+                                \"</div>\";
+                            modal.style.display = \"flex\";
+                        }
+                    }
+
+                    function closePreview() {
+                        const modal = document.getElementById(\"preview-modal\");
+                        const modalBody = document.getElementById(\"modal-body\");
+                        modal.style.display = \"none\";
+                        modalBody.innerHTML = \"\";
+                    }
+
+                    document.addEventListener(\"click\", function(e) {
+                        const modal = document.getElementById(\"preview-modal\");
+                        if (e.target === modal) closePreview();
+                    });
+
                     function editMsg(id) {
                           const container = document.getElementById(`msg-text-${id}`);
                           if (container.querySelector('textarea')) return;
