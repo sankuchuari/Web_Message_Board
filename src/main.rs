@@ -745,7 +745,7 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                      }
 
                     async function saveEdit(id) {
-                        const newText = document.getElementById(`edit-area-${id}`).value;
+                        const newText = document.getElementById(\"edit-area-\" + id).value;
                         const formData = new URLSearchParams();
                         formData.append('message', newText);
                         try {
