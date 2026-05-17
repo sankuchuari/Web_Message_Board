@@ -927,6 +927,7 @@ async fn main() -> io::Result<()> {
     }
     let _ = fs::create_dir_all("uploads");
     let db_url = format!("sqlite://{}", std::env::current_dir()?.join("guestbook.db").display());
+    //与数据库链接
     let db = SqlitePool::connect(&db_url).await.expect("数据库启动失败");
 
     // 自动建表
