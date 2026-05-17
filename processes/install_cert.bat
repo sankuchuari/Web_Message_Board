@@ -18,7 +18,7 @@ if not exist "cert.pem" (
 
 :: 2. Install the certificate
 echo [INFO] Installing cert.pem into Trusted Root Store...
-certutil -addstore -f "Root" "cert.pem"
+certutil -addstore -f "Root" "../static/cert.pem"
 
 if %errorlevel% equ 0 (
     echo.
