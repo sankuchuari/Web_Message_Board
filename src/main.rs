@@ -469,8 +469,20 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
 
                 div id="toast" {}
 
-                // 客户端脚本：处理 i18n、主题切换、表单异步提交及动态 UI 效果
-                script { (PreEscaped(r#"
+                div id="preview-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(12px); z-index:2000; align-items:center; justify-content:center; padding:20px;" {
+                    div style="background:var(--bg-blur); backdrop-filter:blur(25px) saturate(180%); border:1px solid rgba(255,255,255,0.35); border-radius:24px; width:92%; max-width:1000px; height:85vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 30px 60px rgba(0,0,0,0.25);" {
+                        div style="display:flex; justify-content:space-between; align-items:center; padding:16px 24px; border-bottom:1px solid rgba(255,255,255,0.2); background:var(--modal-header-bg); transition: 0.3s;" {
+                            span id="modal-filename" style="font-weight:600; color:white; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:70%;" { "File Name" }
+                            div style="display:flex; gap:20px; align-items:center;" {
+                                a id="modal-download-btn" href="#" download style="color:var(--modal-control-color); text-decoration:none; font-size:1.35rem; opacity:0.85; transition:0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.85" { "📥" }
+                                button onclick="closePreview()" style="background:none; border:none; color:var(--modal-control-color); font-size:1.45rem; cursor:pointer; opacity:0.85; transition:0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.85" { "❌" }
+                            }
+                        }
+                        div id="modal-body" style="flex-grow:1; width:100%; height:100%; position:relative; overflow:hidden;" {}
+                    }
+                }
+
+                script { (PreEscaped("
                     const i18n = {
                         en: {
                             title: "MESSAGE BOARD", mode: "🌓 Mode", lang: "🌐 Lang",
