@@ -959,10 +959,10 @@ async fn main() -> io::Result<()> {
             .service(edit_message)      //消息编辑
             .service(delete_message)    //消息删除
             // 静态资源与上传目录托管
-            .service(Files::new("/uploads", "uploads"))
-            .service(Files::new("/static", "static"))
-    }).bind_rustls_021("0.0.0.0:6790", load_rustls_config())?
-        .bind_rustls_021("[::]:6790", load_rustls_config())?
+            .service(Files::new("/uploads", "uploads")) //上传目录
+            .service(Files::new("/static", "static"))   //静态目录
+    }).bind_rustls_021("0.0.0.0:6790", load_rustls_config())?   //绑定本地IPV4端口
+        .bind_rustls_021("[::]:6790", load_rustls_config())?    //绑定本地IPV6端口
         .run()
         .await
 }
