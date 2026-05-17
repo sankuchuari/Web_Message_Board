@@ -843,6 +843,7 @@ async fn post_message(mut payload: Multipart, db: web::Data<SqlitePool>, session
         } else if field_name == "media" {
             if let Some(name) = filename {
                 if !name.is_empty() {
+                    //获取文件格
                     let ext = Path::new(&name).extension().and_then(|s| s.to_str()).unwrap_or("").to_lowercase();
                     //获取文件名
                     let fname = format!("{}.{}", Uuid::new_v4(), sanitize(&ext));
