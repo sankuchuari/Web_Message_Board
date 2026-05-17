@@ -494,13 +494,13 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                             tipSuccess: \"✅ Login successful!\", tipNoUser: \"❌ Incorrect username or password.\", tipWrong: \"❌ Incorrect username or password.\", tipReg: \"📝 Registration successful! Now please Sign In.\", tipConflict: \"⚠️ Username already exists.\"
                         },
                         zh: {
-                            title: "留言板", mode: "🌓 模式", lang: "🌐 语言",
-                            loginUser: "用户名", loginPass: "密码",
-                            signin: "登录", signup: "注册", logout: "🚪 退出",
-                            textPh: "说点什么...", submit: "发布留言", list: "历史留言：",
-                            del: "删除", edit: "编辑", save: "保存", cancel: "取消",
-                            empty: "暂无留言，快来抢沙发！", view: "📄 查看文件: ",
-                            tipSuccess: "✅ 登录成功！", tipNoUser: "❌ 用户名或密码错误", tipWrong: "❌ 用户名或密码错误", tipReg: "📝 注册成功！现在请登录。", tipConflict: "⚠️ 该用户名已被注册"
+                            title: \"留言板\", mode: \"🌓 模式\", lang: \"🌐 语言\",
+                            loginUser: \"用户名\", loginPass: \"密码\",
+                            signin: \"登录\", signup: \"注册\", logout: \"🚪 退出\",
+                            textPh: \"说点什么...\", submit: \"发布留言\", list: \"历史留言：\",
+                            del: \"删除\", edit: \"编辑\", save: \"保存\", cancel: \"取消\",
+                            empty: \"暂无留言，快来抢沙发！\", view: \"📄 查看文件: \",
+                            tipSuccess: \"✅ 登录成功！\", tipNoUser: \"❌ 用户名或密码错误\", tipWrong: \"❌ 用户名或密码错误\", tipReg: \"📝 注册成功！现在请登录。\", tipConflict: \"⚠️ 该用户名已被注册\"
                         }
                     };
 
