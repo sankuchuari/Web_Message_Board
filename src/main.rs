@@ -862,7 +862,12 @@ async fn post_message(mut payload: Multipart, db: web::Data<SqlitePool>, session
         let img_str = if images.is_empty() { None } else { Some(images.join(",")) };
         let other_str = if others.is_empty() { None } else { Some(others.join(",")) };
         let _ = sqlx::query("INSERT INTO messages (name, message, raw_message, image_path, video_path) VALUES (?, ?, ?, ?, ?)")
-            .bind(user).bind(safe_html).bind(message).bind(img_str).bind(other_str).execute(db.get_ref()).await;
+            .bind(user)             //name
+            .bind(safe_html)        //message
+            .bind(message)          //raw_message
+            .bind(img_str)          //image_path
+            .bind(other_str)        //other_path
+            .execute(db.get_ref()).await;
     }
     //重定向到主目录
     HttpResponse::SeeOther().append_header(("Location", "/")).finish()
