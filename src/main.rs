@@ -521,10 +521,10 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                     function updateUI() {
                         const lang = localStorage.getItem(\"lang\") || \"en\";
                         const t = i18n[lang];
-                        document.getElementById("page-title").textContent = t.title;
-                        document.getElementById("main-title").textContent = t.title;
-                        document.getElementById("theme-toggle").textContent = t.mode;
-                        document.getElementById("lang-toggle").textContent = t.lang;
+                        document.getElementById(\"page-title\").textContent = t.title;
+                        document.getElementById(\"main-title\").textContent = t.title;
+                        document.getElementById(\"theme-toggle\").textContent = t.mode;
+                        document.getElementById(\"lang-toggle\").textContent = t.lang;
 
                         const lUser = document.getElementById("login-user"); if(lUser) lUser.placeholder = t.loginUser;
                         const lPass = document.getElementById("login-pass"); if(lPass) lPass.placeholder = t.loginPass;
