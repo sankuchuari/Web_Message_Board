@@ -790,7 +790,7 @@ pub(crate) async fn edit_message(
 ///     04.30.2026重构函数
 ///     05.04.2026修复IDOR漏洞
 #[post("/delete/{id}")]
-async fn delete_message(
+pub(crate) async fn delete_message(
     //数据库连接
     db: web::Data<SqlitePool>,
     //文件ID
