@@ -847,6 +847,7 @@ async fn post_message(mut payload: Multipart, db: web::Data<SqlitePool>, session
                     let fname = format!("{}.{}", Uuid::new_v4(), sanitize(&ext));
                     let _ = fs::create_dir_all("uploads");
                     let upload_path = format!("uploads/{}", fname);
+                    //确保上传地址已创建后写入
                     if let Ok(mut f) = fs::File::create(&upload_path) {
                         while let Ok(Some(chunk)) = field.try_next().await { let _ = f.write_all(&chunk); }
                         if ["jpg","jpeg","png","gif","webp"].contains(&ext.as_str()) { images.push(fname); } else { others.push(fname); }
