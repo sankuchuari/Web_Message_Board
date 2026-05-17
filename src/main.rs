@@ -514,8 +514,8 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                         t.textContent = msg;
                         t.classList.remove(\"show\");
                         void t.offsetWidth;
-                        t.classList.add("show");
-                        setTimeout(() => t.classList.remove("show"), 10000);
+                        t.classList.add(\"show\");
+                        setTimeout(() => t.classList.remove(\"show\"), 10000);
                     }
 
                     function updateUI() {
