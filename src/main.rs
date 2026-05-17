@@ -829,7 +829,6 @@ async fn post_message(mut payload: Multipart, db: web::Data<SqlitePool>, session
         Some(u) => u,
         None => return HttpResponse::SeeOther().append_header(("Location", "/")).finish(),
     };
-
     let mut message = String::new();
     let mut images = Vec::new();
     let mut others = Vec::new();
