@@ -766,8 +766,8 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                             const formData = new URLSearchParams(new FormData(form));
 
                             try {
-                                const res = await fetch(action, { method: "POST", body: formData });
-                                if (action === "/login") {
+                                const res = await fetch(action, { method: \"POST\", body: formData });
+                                if (action === \"/login\") {
                                     if (res.ok) {
                                         showToast(t.tipSuccess);
                                         setTimeout(() => { window.location.href = "/"; }, 1500);
