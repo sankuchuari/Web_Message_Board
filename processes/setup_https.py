@@ -96,7 +96,7 @@ def generate_ssl_files():
         ))
 
     # 导出证书
-    with open("cert.pem", "wb") as f:
+    with open("./static/cert.pem", "wb") as f:
         f.write(cert.public_bytes(serialization.Encoding.PEM))
 
     print("\n" + "="*40)
