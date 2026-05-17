@@ -798,11 +798,10 @@ async fn index(db: web::Data<SqlitePool>, session: Session) -> impl Responder {
                     const ta = document.getElementById(\"grow-text\");
                     if(ta) ta.addEventListener(\"input\", function() { this.style.height=\"auto\"; this.style.height=this.scrollHeight+\"px\"; });
 
-                    // 文件预览列表刷新
-                    const fileInput = document.getElementById("file-input");
-                    const fileList = document.getElementById("file-list");
-                    if(fileInput) fileInput.addEventListener("change", function() {
-                        fileList.innerHTML = "";
+                    const fileInput = document.getElementById(\"file-input\");
+                    const fileList = document.getElementById(\"file-list\");
+                    if(fileInput) fileInput.addEventListener(\"change\", function() {
+                        fileList.innerHTML = \"\";
                         Array.from(this.files).forEach(file => {
                             const div = document.createElement("div");
                             div.className = "file-item";
