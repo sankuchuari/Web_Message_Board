@@ -97,6 +97,7 @@ pub(crate) async fn login_handler(
 ///     05.04.2026模糊化登录错误反馈
 #[post("/register")]
 pub(crate) async fn register_handler(
+    //数据库链接
     db: web::Data<SqlitePool>,
     payload: web::Json<UnifiedAuthForm>, 
     tx: web::Data<broadcast::Sender<String>>
