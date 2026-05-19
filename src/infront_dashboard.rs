@@ -1201,6 +1201,7 @@ pub(crate) async fn edit_message(
     db: web::Data<SqlitePool>,
     //日志ID
     id: web::Path<i64>,
+    //SessionKey
     session: Session,
     body: String, // 👈 放弃 web::Json，直接吃下原始字符串，确保 100% 进入函数体
     tx: web::Data<broadcast::Sender<String>>
