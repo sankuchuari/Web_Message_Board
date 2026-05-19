@@ -111,7 +111,7 @@ pub(crate) async fn report_device_handler(
         Some(&current_user),
         "前端设备审计",
         &log_details,
-        Some(&report.client_ip), // 这里直接存入前端钩子抓到的IP
+        Some(&report.client_ip),
         Some(&report.os),
         Some(&report.browser),
         Some(tx.get_ref()),
