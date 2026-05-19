@@ -1076,6 +1076,7 @@ pub(crate) async fn index(
 ///     04.30.2026扩充文件支持范围
 ///     05.03.2026优化用户名处理逻辑
 ///     05.04.2025修复存储型XSS漏洞
+///     05。19.2026增加后台反馈
 #[post("/post")]
 pub(crate) async fn post_message(
     //MultipartFile
