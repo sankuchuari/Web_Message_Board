@@ -120,6 +120,7 @@ pub(crate) async fn register_handler(
         Err(_) => return HttpResponse::InternalServerError().finish(),
     };
 
+    //插入用户信息
     let result = sqlx::query("INSERT INTO users (username, password_hash) VALUES (?, ?)")
         .bind(&form.username)
         .bind(&password_hash)
