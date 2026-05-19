@@ -77,6 +77,7 @@ pub(crate) async fn login_handler(
         Ok(Some(row)) => {
             //提取哈希
             let hash: String = row.get("password_hash");
+            //验证哈希
             if let Ok(parsed_hash) = PasswordHash::new(&hash) {
                 if Argon2::default().verify_password(form.password.as_bytes(), &parsed_hash).is_ok() {
                     let _ = session.insert("user", &form.username);
