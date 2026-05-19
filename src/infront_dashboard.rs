@@ -127,6 +127,7 @@ pub(crate) async fn register_handler(
         .execute(db.get_ref())
         .await;
 
+    //反馈日志流
     match result {
         Ok(_) => {
             process_func::log_action(
