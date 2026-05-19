@@ -83,6 +83,7 @@ pub(crate) async fn register_handler(
 pub(crate) async fn report_device_handler(
     //数据库链接
     db: web::Data<SqlitePool>,
+    //SessionKey
     session: actix_session::Session,
     // ✨ 像 web::Form 一样优雅地接收前端打包过来的 JSON 对象
     payload: web::Json<ClientDeviceReportForm>,
