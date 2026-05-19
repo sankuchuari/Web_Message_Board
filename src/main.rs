@@ -4,8 +4,13 @@ pub mod backend_dashboard;
 pub mod infront_dashboard;
 //自建函数引用
 use {
-    //管理员创建与保障
-    crate::routing::process_func::ensure_admin_exists,
+    //辅助函数
+    crate::routing::process_func::{
+        //管理员创建与保障
+        ensure_admin_exists,
+        //数据库创建与保障（python）
+        database_ensure
+    },
     //前台面板
     infront_dashboard::{
         //面板主路由
