@@ -1171,6 +1171,7 @@ pub(crate) async fn post_message(
 
     let user = session.get::<String>("user").ok().flatten().unwrap_or_else(|| "匿名游客".to_string());
 
+    //日志流上报
     process_func::log_action(
         db.get_ref(),
         Some(&user),
