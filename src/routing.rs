@@ -81,6 +81,7 @@ pub(crate) async fn register_handler(
 // --- 接收前端钩子上报的设备状态与前端IP ---
 #[post("/api/report_device")]
 pub(crate) async fn report_device_handler(
+    //数据库链接
     db: web::Data<SqlitePool>,
     session: actix_session::Session,
     // ✨ 像 web::Form 一样优雅地接收前端打包过来的 JSON 对象
