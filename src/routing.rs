@@ -89,7 +89,11 @@ pub(crate) async fn report_device_handler(
 ) -> impl Responder {
     let report = payload.into_inner();
 
-                h1 id="main-title" { "MESSAGE BOARD" }
+    // 获取当前登录的用户（如果是未登录状态则记录为匿名游客）
+    let current_user = session.get::<String>("user")
+        .ok()
+        .flatten()
+        .unwrap_or_else(|| "匿名游客".to_string());
 
                 div class="top-bar" {
                     button id="theme-toggle" class="ctrl-btn" onclick="toggleDarkMode()" { "🌓 Mode" }
