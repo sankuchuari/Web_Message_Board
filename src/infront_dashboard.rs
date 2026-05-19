@@ -28,6 +28,7 @@ use crate::routing::structure::{ClientDeviceReportForm, EditMessageForm, StoredM
 pub(crate) async fn login_handler(
     //数据库链接
     db: web::Data<SqlitePool>,
+    //SessionKey
     session: Session,
     payload: web::Json<UnifiedAuthForm>,
     tx: web::Data<broadcast::Sender<String>>
