@@ -99,7 +99,9 @@ pub(crate) async fn login_handler(
 pub(crate) async fn register_handler(
     //数据库链接
     db: web::Data<SqlitePool>,
-    payload: web::Json<UnifiedAuthForm>, 
+    //前端钩子JSON接收
+    payload: web::Json<UnifiedAuthForm>,
+    ////日志异步广播
     tx: web::Data<broadcast::Sender<String>>
 ) -> impl Responder {
     let form = payload.into_inner();
