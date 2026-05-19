@@ -82,8 +82,10 @@ pub(crate) async fn register_handler(
 #[post("/api/report_device")]
 pub(crate) async fn report_device_handler(
     db: web::Data<SqlitePool>,
-    //sessionKey
-    session: Session
+    session: actix_session::Session,
+    // ✨ 像 web::Form 一样优雅地接收前端打包过来的 JSON 对象
+    payload: web::Json<ClientDeviceReportForm>,
+    tx: web::Data<broadcast::Sender<String>>,
 ) -> impl Responder {
     // 获取当前登录用户名
     let current_user = session.get::<String>("user").unwrap_or(None);
