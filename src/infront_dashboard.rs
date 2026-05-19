@@ -1203,7 +1203,9 @@ pub(crate) async fn edit_message(
     id: web::Path<i64>,
     //SessionKey
     session: Session,
-    body: String, // 👈 放弃 web::Json，直接吃下原始字符串，确保 100% 进入函数体
+    //状态原始字符串
+    body: String,
+    //日志异步广播
     tx: web::Data<broadcast::Sender<String>>
 ) -> impl Responder {
     // 强制声明返回 text/plain 的内容类型，严防前端误解析
