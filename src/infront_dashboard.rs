@@ -1199,6 +1199,7 @@ pub(crate) async fn post_message(
 pub(crate) async fn edit_message(
     //数据库链接
     db: web::Data<SqlitePool>,
+    //日志ID
     id: web::Path<i64>,
     session: Session,
     body: String, // 👈 放弃 web::Json，直接吃下原始字符串，确保 100% 进入函数体
