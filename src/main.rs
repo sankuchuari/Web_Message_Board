@@ -44,6 +44,7 @@ async fn main() -> io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(db.clone()))                           //预拷贝数据库链接
+            .app_data(shared_tx.clone())                                    //绑定日志流消息通道
             .app_data(web::FormConfig::default().limit(4 * 1024 * 1024))    //限制appdata数据块大小，保证编辑长文本时正常保存
             // Session 配置
             .wrap(
