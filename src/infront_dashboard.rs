@@ -167,6 +167,7 @@ pub(crate) async fn register_handler(
 pub(crate) async fn logout_handler(
     //数据库链接
     db: web::Data<SqlitePool>,
+    //SessionKey
     session: Session,
     query: web::Query<crate::routing::structure::LogoutQuery>, // 接收 URL Query 参数
     tx: web::Data<broadcast::Sender<String>>
