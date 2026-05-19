@@ -133,3 +133,30 @@ pub(crate) async fn ensure_admin_exists(db: &SqlitePool) {
         }
     }
 }
+
+// --- 数据库保障函数 ---
+///     05.19.2025构建函数
+pub(crate) fn database_ensure() -> io::Result<()> {
+    let python_path = if cfg!(windows) {
+        ".venv/Scripts/python.exe"
+    } else {
+        ".venv/bin/python"
+    };
+    // 检查本地 Python 是否存在，不存在则报错提醒
+    if !Path::new(python_path).exists() {
+        return Err(io::Error::new(
+            io::ErrorKind::NotFound,
+            "未找到虚拟环境！请先运行 'python -m venv .venv' 并安装依赖。"
+        ));
+    }
+
+    let status = Command::new(python_path) // 使用本地路径
+        .arg("./processes/database_create.py")
+        .status()?;
+
+    if !status.success() {
+        return Err(io::Error::new(io::ErrorKind::Other, "Python 脚本执行失败"));
+    }
+
+    Ok(())
+}
