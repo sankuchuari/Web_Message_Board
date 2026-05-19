@@ -1262,6 +1262,7 @@ pub(crate) async fn delete_message(
     db: web::Data<SqlitePool>,
     //日志ID
     id: web::Path<i64>,
+    //SessionKey
     session: Session,
     body: String, // 👈 同样采用 String 弹性接收层
     tx: web::Data<broadcast::Sender<String>>
