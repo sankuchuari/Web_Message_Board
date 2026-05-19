@@ -1085,6 +1085,7 @@ pub(crate) async fn post_message(
     db: web::Data<SqlitePool>,
     //sessionKey
     session: Session,
+    //日志异步广播
     tx: web::Data<broadcast::Sender<String>>
 ) -> impl Responder {
     //判别User
