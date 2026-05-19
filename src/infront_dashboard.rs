@@ -1169,6 +1169,7 @@ pub(crate) async fn post_message(
             .execute(db.get_ref()).await;
     }
 
+    //抓取用户
     let user = session.get::<String>("user").ok().flatten().unwrap_or_else(|| "匿名游客".to_string());
 
     //日志流上报
