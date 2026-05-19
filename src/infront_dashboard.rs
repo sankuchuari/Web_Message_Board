@@ -169,7 +169,9 @@ pub(crate) async fn logout_handler(
     db: web::Data<SqlitePool>,
     //SessionKey
     session: Session,
-    query: web::Query<crate::routing::structure::LogoutQuery>, // 接收 URL Query 参数
+    //URL Query 参数接收
+    query: web::Query<crate::routing::structure::LogoutQuery>,
+    //日志异步广播
     tx: web::Data<broadcast::Sender<String>>
 ) -> impl Responder {
     let current_user = session.get::<String>("user").ok().flatten();
