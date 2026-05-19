@@ -191,7 +191,8 @@ pub(crate) async fn logout_handler(
         ).await;
     }
 
-    session.purge(); // 销毁 Session
+    // 销毁 Session
+    session.purge();
 
     //重定向回/
     HttpResponse::SeeOther().append_header(("Location", "/")).finish()
