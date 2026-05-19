@@ -85,7 +85,7 @@ pub(crate) async fn report_device_handler(
     db: web::Data<SqlitePool>,
     //SessionKey
     session: actix_session::Session,
-    // ✨ 像 web::Form 一样优雅地接收前端打包过来的 JSON 对象
+    //接收前端打包过来的 JSON 对象
     payload: web::Json<ClientDeviceReportForm>,
     tx: web::Data<broadcast::Sender<String>>,
 ) -> impl Responder {
