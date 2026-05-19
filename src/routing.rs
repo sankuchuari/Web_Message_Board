@@ -95,11 +95,11 @@ pub(crate) async fn report_device_handler(
         .flatten()
         .unwrap_or_else(|| "匿名游客".to_string());
 
-                div class="top-bar" {
-                    button id="theme-toggle" class="ctrl-btn" onclick="toggleDarkMode()" { "🌓 Mode" }
-                    button id="lang-toggle" class="ctrl-btn" onclick="toggleLang()" { "🌐 Lang" }
-                    @if current_user.is_some() { a href="/logout" class="ctrl-btn" id="logout-btn" { "🚪 Logout" } }
-                }
+    // 记录一条全生命周期审计日志，展示前端抓到的 IP 和系统环境
+    let log_details = format!(
+        "前端感知上报 -> 操作系统: {}, 浏览器: {}, 前端抓取IP: {}",
+        report.os, report.browser, report.client_ip
+    );
 
                 div class="glass" {
                     @match current_user {
