@@ -19,15 +19,77 @@ pub(crate) struct StoredMessage {
     pub(crate) created_at: String,
 }
 
-/// 登录与注册表单接收模型
-#[derive(serde::Deserialize)]
-pub(crate) struct AuthForm {
-    pub(crate) username: String,
-    pub(crate) password: String,
+/// 审计日志映射结构体
+#[derive(serde::Serialize, sqlx::FromRow, Clone)]
+pub(crate) struct AuditLog {
+    pub(crate) username: Option<String>,
+    pub(crate) action: String,
+    pub(crate) details: Option<String>,
+    pub(crate) ip_address: Option<String>,
+    pub(crate) os: Option<String>,
+    pub(crate) browser: Option<String>,
+    pub(crate) created_at: String,
 }
 
-/// 消息编辑表单接收模型
+/// 后台用户管理列表项
+#[derive(serde::Serialize, sqlx::FromRow, Clone)]
+pub(crate) struct AdminUserItem {
+    pub(crate) id: i64,
+    pub(crate) username: String,
+    pub(crate) is_admin: i64,
+    pub(crate) created_at: String,
+}
+
+/// SMTP 邮件服务配置表单接收模型
 #[derive(serde::Deserialize)]
-pub(crate)struct EditForm {
-    pub(crate) message: String,
+pub(crate) struct SmtpConfigForm {
+    pub(crate) smtp_host: String,
+    pub(crate) smtp_port: u16,
+    pub(crate) smtp_user: String,
+    pub(crate) smtp_pass: String,
+}
+
+/// 用户状态日志模型
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UnifiedAuthForm {
+    // --- 账号安全凭证 ---
+    pub username: String,
+    pub password: String,
+
+    // --- 前端无感指纹载荷 ---
+    pub client_ip: Option<String>,
+    pub os: Option<String>,
+    pub browser: Option<String>,
+}
+
+/// 访问端设备快照模型
+#[derive(serde::Deserialize, Debug)]
+pub(crate) struct ClientDeviceReportForm {
+    pub(crate) client_ip: String,
+    pub(crate) os: String,
+    pub(crate) browser: String,
+}
+/// 日志编辑日志模型
+#[derive(Debug, serde::Deserialize)]
+pub struct EditMessageForm {
+    // 业务字段
+    pub message: String,
+
+    // 感知环境字段（专门留给前端 Hook 填充）
+    #[serde(default)]
+    pub client_ip: Option<String>,
+
+    #[serde(default)]
+    pub os: Option<String>,
+
+    #[serde(default)]
+    pub browser: Option<String>,
+}
+
+/// 登出日志模型
+#[derive(Debug, serde::Deserialize)]
+pub struct LogoutQuery {
+    pub client_ip: Option<String>,
+    pub os: Option<String>,
+    pub browser: Option<String>,
 }
