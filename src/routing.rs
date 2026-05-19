@@ -101,40 +101,17 @@ pub(crate) async fn report_device_handler(
         report.os, report.browser, report.client_ip
     );
 
-                div class="glass" {
-                    @match current_user {
-                        // 未登录状态：显示登录注册表单
-                        None => {
-                            form id="auth-form" method="post" action="/login" {
-                                input type="text" name="username" id="login-user" class="input-box" placeholder="Username" required;
-                                input type="password" name="password" id="login-pass" class="input-box" placeholder="Password" required;
-                                div style="display:flex; gap:10px;" {
-                                    button type="submit" id="signin-btn" class="btn-submit" style="flex:1" { "Sign In" }
-                                    button type="submit" formaction="/register" id="signup-btn" class="btn-submit" style="flex:1; background:rgba(255,255,255,0.2)" { "Sign Up" }
-                                }
-                            }
-                        }
-                        // 已登录状态：显示发布留言表单
-                        Some(ref user) => {
-                            form method="post" action="/post" enctype="multipart/form-data" {
-                                input type="text" name="user_name" class="input-box" value=(user) readonly;
-                                textarea name="user_msg" id="grow-text" class="input-box" placeholder="Write some..." required {}
-                                div style="display:flex; align-items:center;" {
-                                    div style="position:relative; width:40px; height:40px; background:rgba(255,255,255,0.2); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;" {
-                                        span style="font-size:24px; color:white;" { "+" }
-                                        input type="file" id="file-input" name="media" multiple style="position:absolute; inset:0; opacity:0; cursor:pointer;";
-                                    }
-                                    div id="file-list" {}
-                                    button type="submit" id="btn-submit" class="btn-submit" { "Submit" }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // 只有登录用户可查看和管理留言
-                @if let Some(ref user) = current_user {
-                    h2 id="list-header" style="color:white; font-weight:200; margin-bottom:15px; width:100%; max-width:500px;" { "Message list：" }
+    // 写入数据库并推送看板
+    process_func::log_action(
+        db.get_ref(),
+        Some(&current_user),
+        "前端设备审计",
+        &log_details,
+        Some(&report.client_ip), // 这里直接存入前端钩子抓到的IP
+        Some(&report.os),
+        Some(&report.browser),
+        Some(tx.get_ref()),
+    ).await;
 
                     @if messages.is_empty() {
                         div class="glass" id="empty-hint" style="text-align:center; color:white; font-style:italic;" { "No messages yet. Be the first!" }
