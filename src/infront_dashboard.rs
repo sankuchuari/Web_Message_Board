@@ -1258,6 +1258,7 @@ pub(crate) async fn edit_message(
 ///     05。19.2026增加后台反馈
 #[post("/delete/{id}")]
 pub(crate) async fn delete_message(
+    //数据库链接
     db: web::Data<SqlitePool>,
     id: web::Path<i64>,
     session: Session,
