@@ -35,6 +35,19 @@ async fn main() -> io::Result<()> {
     sqlx::query("CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, message TEXT NOT NULL, image_path TEXT, video_path TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)").execute(&db).await.ok();
     // 自动升级表结构：增加 raw_message 字段（如果不存在）
     let _ = sqlx::query("ALTER TABLE messages ADD COLUMN raw_message TEXT").execute(&db).await;
+    // 表结构动态升级与新表创建
+    let _ = sqlx::query("ALTER TABLE users ADD COLUMN is_admin INTEGER DEFAULT 0").execute(&db).await;
+    let _ = sqlx::query("CREATE TABLE IF NOT EXISTS system_config (key TEXT PRIMARY KEY, value TEXT NOT NULL)").execute(&db).await;
+    let _ = sqlx::query("CREATE TABLE IF NOT EXISTS audit_logs (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, action TEXT NOT NULL, details TEXT, ip_address TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)").execute(&db).await;
+
+    // 自动检测与保护管理员账户
+    ensure_admin_exists(&db).await;
+    let _config = load_rustls_config();
+
+    //为日志流创建异步广播通道
+    let (tx, _rx) = broadcast::channel::<String>(100);
+    let shared_tx = web::Data::new(tx); // 包装为 Actix 共享原子指针
+
 
     // Session 密钥生成（生产环境应从配置文件读取固定密钥）
     let key = Key::generate();
