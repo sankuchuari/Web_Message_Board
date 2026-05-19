@@ -104,6 +104,7 @@ pub(crate) async fn register_handler(
     ////日志异步广播
     tx: web::Data<broadcast::Sender<String>>
 ) -> impl Responder {
+    //解析JSON
     let form = payload.into_inner();
 
     if form.username.len() > 32 || form.password.len() > 128 {
