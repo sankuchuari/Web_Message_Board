@@ -37,7 +37,7 @@ pub(crate) async fn login_handler(
 ) -> impl Responder {
     //解析JSON
     let form = payload.into_inner();
-
+    //随机休眠，模糊登录处理
     let delay = rand::thread_rng().gen_range(100..500);
     tokio::time::sleep(Duration::from_millis(delay)).await;
 
