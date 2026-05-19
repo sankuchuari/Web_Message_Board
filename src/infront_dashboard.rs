@@ -1260,6 +1260,7 @@ pub(crate) async fn edit_message(
 pub(crate) async fn delete_message(
     //数据库链接
     db: web::Data<SqlitePool>,
+    //日志ID
     id: web::Path<i64>,
     session: Session,
     body: String, // 👈 同样采用 String 弹性接收层
