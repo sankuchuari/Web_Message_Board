@@ -59,20 +59,6 @@ pub(crate) async fn login_handler(
         ).await;
         HttpResponse::Unauthorized().body("wrong_credentials")
     };
-    //登录成功反馈
-    let auth_succeed={
-        process_func::log_action(
-            db.get_ref(),
-            Some(&form.username),
-            "USER_LOGIN_SUCCESS",
-            "会话鉴权成功并建立连接",
-            form.client_ip.as_deref(),
-            form.os.as_deref(),
-            form.browser.as_deref(),
-            Some(tx.get_ref())
-        ).await;
-        return HttpResponse::Ok().body("success");
-    };
     match row {
         Ok(Some(row)) => {
             //提取哈希
@@ -82,8 +68,19 @@ pub(crate) async fn login_handler(
                 if Argon2::default().verify_password(form.password.as_bytes(), &parsed_hash).is_ok() {
                     let _ = session.insert("user", &form.username);
                     session.renew();
-                   auth_succeed
                 }
+                //登录成功反馈
+                process_func::log_action(
+                    db.get_ref(),
+                    Some(&form.username),
+                    "USER_LOGIN_SUCCESS",
+                    "会话鉴权成功并建立连接",
+                    form.client_ip.as_deref(),
+                    form.os.as_deref(),
+                    form.browser.as_deref(),
+                    Some(tx.get_ref())
+                ).await;
+                return HttpResponse::Ok().body("success");
             }
             auth_failed
         }
