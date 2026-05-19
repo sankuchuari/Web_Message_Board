@@ -28,7 +28,7 @@ pub(crate) fn markdown_to_html(input: &str) -> String {
 // --- 异步用户行为日志记录 ---
 ///     05.19.2025构建函数
 pub async fn log_action(
-    db: &sqlx::SqlitePool,
+    db: &SqlitePool,
     username: Option<&str>,
     action: &str,
     details: &str,
