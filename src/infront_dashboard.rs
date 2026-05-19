@@ -165,6 +165,7 @@ pub(crate) async fn register_handler(
 ///     05。19.2026增加后台反馈
 #[get("/logout")]
 pub(crate) async fn logout_handler(
+    //数据库链接
     db: web::Data<SqlitePool>,
     session: Session,
     query: web::Query<crate::routing::structure::LogoutQuery>, // 接收 URL Query 参数
