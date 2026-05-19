@@ -75,6 +75,7 @@ pub(crate) async fn login_handler(
     };
     match row {
         Ok(Some(row)) => {
+            //提取哈希
             let hash: String = row.get("password_hash");
             if let Ok(parsed_hash) = PasswordHash::new(&hash) {
                 if Argon2::default().verify_password(form.password.as_bytes(), &parsed_hash).is_ok() {
