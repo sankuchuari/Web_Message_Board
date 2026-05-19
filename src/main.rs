@@ -1,12 +1,73 @@
 pub mod tls_ssl_certificate_register;
 pub mod routing;
-use tls_ssl_certificate_register::{run_python_setup, load_rustls_config};
-use routing::*;
-use actix_web::{cookie::Key, cookie::SameSite, web, App, HttpServer};
-use actix_session::{storage::CookieSessionStore, SessionMiddleware};
-use actix_files::Files;
-use sqlx::{SqlitePool};
-use std::{fs, io};
+pub mod backend_dashboard;
+pub mod infront_dashboard;
+//自建函数引用
+use {
+    //管理员创建与保障
+    crate::routing::process_func::ensure_admin_exists,
+    //前台面板
+    infront_dashboard::{
+        //面板主路由
+        index,
+        //用户状态处理
+        login_handler,logout_handler,register_handler,
+        //留言基本行为（发送、编辑、删除）
+        post_message,edit_message,delete_message
+    },
+    //后台面板
+    backend_dashboard::{
+        //面板主路由
+        admin_dashboard,
+        //管理员基本行为
+        admin_delete_user,toggle_user_role,
+        //邮件配置
+        save_smtp_config,
+        //日志流处理
+        audit_log_stream
+    }
+    //辅助路由
+    routing::{
+        //前端钩子状态接收
+        report_device_handler
+    }
+    //TLS_SSL自动化创建和注册
+    tls_ssl_certificate_register::{
+        //签名创建（Python)
+        run_python_setup,
+        //签名注册（命令行）
+        load_rustls_config
+    }
+};
+//库引用
+use{
+    //异步web框架
+    actix_web::{
+        cookie::{
+            Key,SameSite
+        },
+        web, App, HttpServer
+    }
+    //Actix_Web会话管理
+    actix_session::{
+        storage::CookieSessionStore, SessionMiddleware
+    }
+    //Actix_Web静态文件服务扩展
+    actix_files::{
+        Files
+    }
+    //SQL工具包
+    sqlx::{
+        SqlitePool
+    }
+    tokio::{
+        sync::broadcast
+    }
+    std::{
+        fs, io
+    }
+}
+
 // --- 启动入口 ---
 ///日志：
 ///     04.26.2025构建函数
