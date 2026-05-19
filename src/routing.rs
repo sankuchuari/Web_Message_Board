@@ -90,6 +90,7 @@ pub(crate) async fn report_device_handler(
     //日志异步广播
     tx: web::Data<broadcast::Sender<String>>,
 ) -> impl Responder {
+    //解析JSON
     let report = payload.into_inner();
 
     // 获取当前登录的用户（如果是未登录状态则记录为匿名游客）
