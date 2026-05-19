@@ -1264,7 +1264,9 @@ pub(crate) async fn delete_message(
     id: web::Path<i64>,
     //SessionKey
     session: Session,
-    body: String, // 👈 同样采用 String 弹性接收层
+    //状态原始字符串
+    body: String,
+    //日志异步广播
     tx: web::Data<broadcast::Sender<String>>
 ) -> impl Responder {
     let mut response = HttpResponse::Ok();
