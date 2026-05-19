@@ -30,6 +30,7 @@ pub(crate) async fn login_handler(
     db: web::Data<SqlitePool>,
     //SessionKey
     session: Session,
+    //前端钩子JSON反馈
     payload: web::Json<UnifiedAuthForm>,
     tx: web::Data<broadcast::Sender<String>>
 ) -> impl Responder {
