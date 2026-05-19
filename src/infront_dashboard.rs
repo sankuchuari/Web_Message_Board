@@ -174,6 +174,7 @@ pub(crate) async fn logout_handler(
     //日志异步广播
     tx: web::Data<broadcast::Sender<String>>
 ) -> impl Responder {
+    //抓取用户数据
     let current_user = session.get::<String>("user").ok().flatten();
 
     if let Some(ref user) = current_user {
