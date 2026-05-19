@@ -1,3 +1,4 @@
+use serde::{Deserialize, Serialize};
 // --- 数据结构 ---
 
 /// 存储在数据库中的留言信息结构体
