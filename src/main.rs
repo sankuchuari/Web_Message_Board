@@ -93,6 +93,9 @@ async fn main() -> io::Result<()> {
     }
     //创建上传目录连接
     let _ = fs::create_dir_all("uploads");
+    //数据库检测与自动创建
+    let path = Path::new("./static/guestbook.db");
+    if !path.exists() { database_ensure();}
     //创建数据库URL
     let db_url = format!("sqlite://{}", std::env::current_dir()?.join("./static/guestbook.db").display());
     //与数据库链接
