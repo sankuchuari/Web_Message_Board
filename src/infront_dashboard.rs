@@ -106,7 +106,7 @@ pub(crate) async fn register_handler(
 ) -> impl Responder {
     //解析JSON
     let form = payload.into_inner();
-
+    //判别用户信息合法性
     if form.username.len() > 32 || form.password.len() > 128 {
         return HttpResponse::BadRequest().body("invalid_input");
     }
