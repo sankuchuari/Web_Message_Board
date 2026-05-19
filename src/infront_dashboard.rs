@@ -32,6 +32,7 @@ pub(crate) async fn login_handler(
     session: Session,
     //前端钩子JSON反馈
     payload: web::Json<UnifiedAuthForm>,
+    //日志异步广播
     tx: web::Data<broadcast::Sender<String>>
 ) -> impl Responder {
     let form = payload.into_inner();
