@@ -162,6 +162,7 @@ pub(crate) async fn register_handler(
 // --- 登出处理 ---
 ///日志：
 ///     05.03.2026构建函数
+///     05。19.2026增加后台反馈
 #[get("/logout")]
 pub(crate) async fn logout_handler(
     db: web::Data<SqlitePool>,
