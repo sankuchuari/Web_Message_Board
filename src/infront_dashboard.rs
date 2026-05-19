@@ -79,18 +79,7 @@ pub(crate) async fn login_handler(
                 if Argon2::default().verify_password(form.password.as_bytes(), &parsed_hash).is_ok() {
                     let _ = session.insert("user", &form.username);
                     session.renew();
-
-                    process_func::log_action(
-                        db.get_ref(),
-                        Some(&form.username),
-                        "USER_LOGIN_SUCCESS",
-                        "会话鉴权成功并建立连接",
-                        form.client_ip.as_deref(),
-                        form.os.as_deref(),
-                        form.browser.as_deref(),
-                        Some(tx.get_ref())
-                    ).await;
-                    return HttpResponse::Ok().body("success");
+                   auth_succeed
                 }
             }
             auth_failed
