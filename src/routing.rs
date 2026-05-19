@@ -87,6 +87,7 @@ pub(crate) async fn report_device_handler(
     session: actix_session::Session,
     //接收前端打包过来的 JSON 对象
     payload: web::Json<ClientDeviceReportForm>,
+    //日志异步广播
     tx: web::Data<broadcast::Sender<String>>,
 ) -> impl Responder {
     let report = payload.into_inner();
