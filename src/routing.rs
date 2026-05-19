@@ -78,33 +78,9 @@ pub(crate) async fn register_handler(
     }
 }
 
-// --- 登出处理 ---
-///日志：
-///     05.03.2026构建函数
-#[get("/logout")]
-pub(crate) async fn logout_handler(
-    //sessionKey
-    session: Session
-) -> impl Responder {
-    session.purge();
-    HttpResponse::SeeOther().append_header(("Location", "/")).finish()
-}
-
-// --- 主页面渲染  ---
-///日志：
-///     04.26.2025构建函数
-///     04.30.2026重构函数
-///     04.30.2026重构UI样式
-///     05.03.2026增加登录UI、增加I18n双语逻辑
-///     05.07.2026增加编辑UI逻辑
-///     05.08.2026增加LaTeX渲染逻辑
-///     05.08.2026优化编辑UI
-///     05.08.2026优化编辑功能，确保长文本能正常编辑和保存
-///     05.17.2026增加前端预览文件逻辑
-///     05.17.2026以/格式化重构JS部分
-#[get("/")]
-pub(crate) async fn index(
-    //数据库连接
+// --- 接收前端钩子上报的设备状态与前端IP ---
+#[post("/api/report_device")]
+pub(crate) async fn report_device_handler(
     db: web::Data<SqlitePool>,
     //sessionKey
     session: Session
