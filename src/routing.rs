@@ -5,7 +5,9 @@ use tokio::sync::broadcast;
 pub mod structure;
 pub mod process_func;
 
-// --- 接收前端钩子上报的设备状态与前端IP ---
+// --- 前端钩子上报接收 ---
+///日志：
+///     05.19.2025构建函数
 #[post("/api/report_device")]
 pub(crate) async fn report_device_handler(
     //数据库链接
