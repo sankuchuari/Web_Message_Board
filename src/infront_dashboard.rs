@@ -112,6 +112,7 @@ pub(crate) async fn register_handler(
     }
     //创建加密盐
     let salt = SaltString::generate(&mut argon2::password_hash::rand_core::OsRng);
+    //创建Argon2对象
     let argon2 = Argon2::default();
     let password_hash = match argon2.hash_password(form.password.as_bytes(), &salt) {
         Ok(h) => h.to_string(),
