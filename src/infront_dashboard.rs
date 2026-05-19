@@ -177,6 +177,7 @@ pub(crate) async fn logout_handler(
     //抓取用户数据
     let current_user = session.get::<String>("user").ok().flatten();
 
+    //日志上报
     if let Some(ref user) = current_user {
         process_func::log_action(
             db.get_ref(),
