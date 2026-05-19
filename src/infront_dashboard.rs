@@ -193,7 +193,7 @@ pub(crate) async fn logout_handler(
 
     session.purge(); // 销毁 Session
 
-    // ✅ 关键：传统 GET 页面跳转，成功后 SeeOther 重定向回首页
+    //重定向回/
     HttpResponse::SeeOther().append_header(("Location", "/")).finish()
 }
 
