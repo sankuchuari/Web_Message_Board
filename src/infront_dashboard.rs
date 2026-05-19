@@ -1197,6 +1197,7 @@ pub(crate) async fn post_message(
 
 #[post("/edit/{id}")]
 pub(crate) async fn edit_message(
+    //数据库链接
     db: web::Data<SqlitePool>,
     id: web::Path<i64>,
     session: Session,
