@@ -95,6 +95,7 @@ pub(crate) async fn login_handler(
 ///日志：
 ///     05.03.2026构建函数
 ///     05.04.2026模糊化登录错误反馈
+///     05。19.2026增加后台反馈
 #[post("/register")]
 pub(crate) async fn register_handler(
     //数据库链接
