@@ -58,7 +58,20 @@ pub(crate) async fn login_handler(
         ).await;
         HttpResponse::Unauthorized().body("wrong_credentials")
     };
-
+    
+    let auth_succeed={
+        process_func::log_action(
+            db.get_ref(),
+            Some(&form.username),
+            "USER_LOGIN_SUCCESS",
+            "会话鉴权成功并建立连接",
+            form.client_ip.as_deref(),
+            form.os.as_deref(),
+            form.browser.as_deref(),
+            Some(tx.get_ref())
+        ).await;
+        return HttpResponse::Ok().body("success");
+    };
     match row {
         Ok(Some(row)) => {
             let hash: String = row.get("password_hash");
