@@ -110,7 +110,7 @@ pub(crate) async fn register_handler(
     if form.username.len() > 32 || form.password.len() > 128 {
         return HttpResponse::BadRequest().body("invalid_input");
     }
-
+    //创建加密盐
     let salt = SaltString::generate(&mut argon2::password_hash::rand_core::OsRng);
     let argon2 = Argon2::default();
     let password_hash = match argon2.hash_password(form.password.as_bytes(), &salt) {
