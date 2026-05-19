@@ -35,6 +35,7 @@ pub(crate) async fn login_handler(
     //日志异步广播
     tx: web::Data<broadcast::Sender<String>>
 ) -> impl Responder {
+    //解析JSON
     let form = payload.into_inner();
 
     let delay = rand::thread_rng().gen_range(100..500);
