@@ -54,13 +54,19 @@ async fn main() -> io::Result<()> {
                     .build()
             )
             // 路由注册
-            .service(index)             //根目录
-            .service(login_handler)     //登录管理
-            .service(register_handler)  //注册管理
-            .service(logout_handler)    //登出管理
-            .service(post_message)      //消息上传
-            .service(edit_message)      //消息编辑
-            .service(delete_message)    //消息删除
+            .service(index)                 //前端面板
+            .service(login_handler)         //登录管理
+            .service(register_handler)      //注册管理
+            .service(logout_handler)        //登出管理
+            .service(post_message)          //消息上传
+            .service(edit_message)          //消息编辑
+            .service(delete_message)        //消息删除
+            .service(admin_dashboard)       //管理面板
+            .service(save_smtp_config)      //SMTP保存
+            .service(admin_delete_user)     //用户删除
+            .service(toggle_user_role)      //用户提权
+            .service(report_device_handler) //钩子接收
+            .service(audit_log_stream)      //日志接收
             // 静态资源与上传目录托管
             .service(Files::new("/uploads", "uploads")) //上传目录
             .service(Files::new("/static", "static"))   //静态目录
