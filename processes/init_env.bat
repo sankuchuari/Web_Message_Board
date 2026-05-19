@@ -32,7 +32,7 @@ python -m venv ..\.venv
 
 echo [3/3] Installing dependencies...
 ..\.venv\Scripts\python.exe -m pip install --upgrade pip
-..\.venv\Scripts\python.exe -m pip install -r ..\requirements.txt
+..\.venv\Scripts\python.exe -m pip install -r ..\static\requirements.txt
 
 echo ========================================
 echo [OK] Environment initialized successfully!
