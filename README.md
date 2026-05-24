@@ -69,8 +69,8 @@ Release 版本已将复杂的 Rust 编译产物打包，并集成了必要的初
 
 ```text
 ├── server/server.exe          # 编译好的主程序二进制文件
-├── database.db                # 系统自动生成的 SQLite 数据库（运行后出现）
 ├── static/                    # 静态资源目录（包含 CSS、JS 以及自动生成的证书 cert.pem, key.pem）
+│   └── database.db            # 系统自动生成的 SQLite 数据库（运行后出现）
 ├── uploads/                   # 用户上传的多媒体图片、视频托管目录
 ├── processes/                 # 自动化环境脚本目录
 │   ├── init_env.bat           # Windows 环境初始化批处理
