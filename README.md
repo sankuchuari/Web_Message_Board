@@ -1,169 +1,87 @@
-# 🚀 Rust Glassy Message Board (PWA)
+# 🚀 Rust Secure Bulletin Board (基于 Actix-Web 的全栈安全留言板系统)
 
-一个基于 **Rust + Actix-web** 构建的极简毛玻璃风格留言板系统。支持多媒体上传、Markdown 渲染、多语言切换，并具备完整 PWA 原生应用体验。
+这是一个采用 **Rust (Actix-web)** 开发的高性能、高安全性、多用户全栈留言板系统。具备完善的前后台管理、实时审计日志流、自动化 TLS/SSL 证书配置以及前台无感设备指纹追踪等全套功能。
 
----
-
-## ✨ 功能特性
-
-* 🎨 毛玻璃（Glassmorphism）UI + 深色模式
-* 🌍 中英文双语切换（i18n）
-* 📱 PWA 支持（可安装为桌面/手机应用）
-* 📝 Markdown 留言渲染
-* 📁 图片 / 视频 / 音频上传与预览
-* 💾 SQLite 数据持久化
-* 🛠️ 自适应输入框（聊天式体验）
+针对您发布的 **Release 压缩包（开箱即食版）**，本手册将指引使用者如何快速部署与运行。
 
 ---
 
-## 🛠️ 技术栈
+## ✨ 核心特性
 
-**后端 (Backend)**
-*   **Rust**: 核心逻辑处理
-*   **Actix-web**: 高性能异步 Web 框架
-*   **SQLx + SQLite**: 异步数据库操作与持久化
-*   **Argon2**: 工业级密码哈希加密
-*   **Actix-session**: 基于 Cookie 的加密会话控制
-
-**前端 (Frontend)**
-*   **JavaScript**: 原生异步交互 (Fetch API)
-*   **Maud**: 强类型 HTML 模板引擎
-*   **CSS3**: Flexbox 布局 + Keyframes 动画（无外部依赖）
-
-**PWA**
-
-* manifest.json
-* Service Worker
-
----
-## ⚙️ 核心设计说明
-
-### 📌 1. 交互设计：10秒智能平滑弹窗
-项目弃用了传统的页面重定向反馈，采用 CSS3 `keyframes` 实现非阻塞式提醒。
-- **触发机制**：通过 JavaScript 拦截表单提交，根据后端返回的 HTTP 状态码（200/401/404）触发。
-- **动画表现**：弹窗从浏览器底沿平滑弹出，并在 10 秒后自动向下收回，确保用户有充足时间阅读反馈信息而不中断浏览体验。
-
-### 📌 2. 安全与存储策略
-- **身份验证**：数据库严禁存储明文密码，统一使用 Argon2 进行单向高强度哈希。
-- **会话持久化**：使用加密 Cookie 维护登录状态，确保留言板的“发布”与“删除”功能仅对合法所有者开放。
-- **IO 安全**：对所有上传的文件名进行 `sanitize` 过滤，并使用 UUID 重新命名，彻底杜绝路径穿越攻击。
-
-### 📌 3. PWA 原生化
-- 通过 `manifest.json` 定义应用色彩与图标。
-- 配置 Service Worker 确保应用在移动端具备独立运行的能力，提升加载性能。
+* **🦀 纯 Rust 构建的高性能后端**：基于 `Actix-web` 异步框架与 `Tokio` 异步运行时，结合 `SQLx` 异步操作 SQLite 数据库，轻量高效。
+* **🔒 全方位安全防护机制**：
+    * **密码安全**：采用行业标杆的 `Argon2` 算法进行密码哈希加盐存储。
+    * **防 XSS 攻击**：Markdown 渲染为 HTML 后，强制通过 `Ammonia` 库进行严格的白名单清洗，杜绝存储型 XSS。
+    * **会话安全**：基于加密 Cookie 的 Session 机制，开启 `HttpOnly`（防 JS 劫持）、`SameSite=Lax`（缓解 CSRF）及 `Secure`（仅限 HTTPS）。
+    * **安全频率控制**：内置登录频率限制，防止暴力破解。
+* **🛠️ 自动化环境感知与一键 HTTPS**：
+    * 启动时自动检测并调用内置 Python 脚本（支持 `.venv` 虚拟环境隔离）。
+    * 全自动生成、注册本地测试用的 TLS/SSL 证书 (`cert.pem` / `key.pem`)，原生支持端到端 HTTPS 传输。
+* **👁️ 全生命周期动态审计日志**：
+    * **前端无感指纹**：前端钩子静默上报访问者的操作系统、浏览器内核及抓取 IP 载荷（`UnifiedAuthForm` & `ClientDeviceReportForm`）。
+    * **后端实时广播**：基于 `Tokio Broadcast Channel` 建立异步日志流，管理员可在后台（`/admin`）免刷新实时监控系统动作。
+* **💼 完善的后台管理系统**：
+    * **零配置无缝初始化**：系统检测到无管理员时，将**自动生成默认安全管理员账号及随机密码**并打印在控制台。
+    * **人员权限控管**：支持一键对用户进行升权（超级管理组）、降权（普通前台组）或物理删除。
+    * **动态邮件配置**：支持在后台直接配置 SMTP 服务（基于 `Lettre` 库），无缝对接通知系统。
+* **📝 富媒体消息动态发布**：支持 Markdown 源码输入，并配备图片、视频等富媒体 UUID 托管（自动防路径穿越清洗 `sanitize_filename`）。
 
 ---
 
-## 🚀 快速开始
+## 📦 开箱即食：快速启动指南
 
-### 1️⃣ 安装环境
+Release 版本已将复杂的 Rust 编译产物打包，并集成了必要的初始化脚本，确保双击即可运行。
 
-确保已安装：
+### 1. 前置准备
+* 系统需要安装 **Python 3.x** 环境。
+* （可选）如果是 Windows 环境，请确保具有管理员权限（用于自动注册本地 SSL 证书）。
 
-* Rust（stable）
-* Cargo
+### 2. 解压与运行
+将 Release 压缩包解压到本地任意目录：
 
----
+#### 🔹 Windows 系统：
+1. 进入解压目录，直接双击运行主程序 `server.exe`（或者在终端执行 `./server.exe`）。
+2. 首次运行时，程序会自动调用 `./processes/init_env.bat` 创建 Python 虚拟环境并使用 `./processes/setup_https.py` 签发本地证书，随后会自动请求管理员权限将证书导入受信任列表。
+3. 环境就绪后，系统会自动创建 SQLite 数据库文件并检查管理员状态。
 
-### 2️⃣ 克隆项目
+### 3. 获取初始管理员凭证
 
-git clone https://github.com/sankuchuari/Web_Message_Board.git
-cd Web_Message_Board
+当系统首次启动且检测到数据库为空时，控制台将输出如下**高亮警告框**，请**密切注意并保存其中的随机凭证**：
 
----
+```text
++--------------------------------------------------------+
+| [警告] 系统未检测到管理员账户，已自动初始化默认管理员！ |
+| 账号 (Username): admin_xxxx                            |
+| 密码 (Password): xxxxxxxx_xxxx_xxxx                    |
+| 请在登录后台后及时修改密码或创建新的管理员账户。       |
++--------------------------------------------------------+
 
-### 3️⃣ 运行项目
+```
 
-cargo run
+### 4. 访问系统
 
----
-
-### 4️⃣ 打开浏览器
-
-http://localhost:6790
-
----
-
-## 📁 项目结构
-
-.
-├── main.rs  
-├── Cargo.toml  
-├── guestbook.db  
-│  
-├── static/  
-│   ├── back_image.png  
-│   ├── manifest.json  
-│   ├── sw.js  
-│   ├── icon-64x64.ico  
-│   │  
-│   └── icons/  
-│       ├── icon-192x192.png  
-│       └── icon-512x512.png  
-│  
-└── uploads/  
+* **前台主页**：打开浏览器，访问 `https://localhost` 或 `https://127.0.0.1` 即可进入留言板主页。
+* **管理后台**：访问 `https://localhost/admin`，使用控制台打印的初始管理员账号密码登录，即可进入实时审计与配置面板。
 
 ---
 
-## ⚙️ 配置说明
+## 📂 目录结构说明
 
-### 📌 PWA 配置（static/manifest.json）
+```text
+├── server/server.exe          # 编译好的主程序二进制文件
+├── database.db                # 系统自动生成的 SQLite 数据库（运行后出现）
+├── static/                    # 静态资源目录（包含 CSS、JS 以及自动生成的证书 cert.pem, key.pem）
+├── uploads/                   # 用户上传的多媒体图片、视频托管目录
+├── processes/                 # 自动化环境脚本目录
+│   ├── init_env.bat           # Windows 环境初始化批处理
+│   └── setup_https.py         # HTTPS 证书自动签发 Python 脚本
+└── README.md                  # 本说明文件
 
-{
-"name": "Message Board",
-"short_name": "MsgBoard",
-"start_url": "/",
-"display": "standalone",
-"background_color": "#121212",
-"theme_color": "#121212",
-"icons": [
-{
-"src": "/static/icons/icon-192x192.png",
-"sizes": "192x192",
-"type": "image/png"
-},
-{
-"src": "/static/icons/icon-512x512.png",
-"sizes": "512x512",
-"type": "image/png"
-}
-]
-}
+```
 
 ---
 
-### 📌 Service Worker（static/sw.js）
+## ⚠️ 注意事项
 
-self.addEventListener('fetch', function(event) {
-// 空实现即可启用 PWA 安装
-});
-
----
-
-## 📱 安装方式
-
-### 💻 桌面端（Chrome / Edge）
-
-* 打开网站
-* 点击地址栏安装按钮
-
-### 📱 移动端
-
-**Android**
-
-* 添加到主屏幕
-
-**iOS**
-
-* Safari → 分享 → 添加到主屏幕
-
----
-
-## 📦 项目亮点
-
-* 🚀 Rust 高性能后端
-* 🎨 Glassmorphism 现代 UI
-* 📱 PWA 原生应用体验
-* 📝 Markdown 即时渲染
-* 📁 多媒体留言系统
-* 💾 SQLite 本地持久化
+1. **HTTPS 必须**：由于系统 Session 开启了 `cookie_secure(true)` 保护，**必须通过 `https://` 协议进行访问**。如果使用 `http://` 访问将无法保持登录状态。
+2. **默认证书**：系统自带的 Python 证书脚本适用于本地局域网（localhost/127.0.0.1）安全调试。若要部署至公网，请更换为正式的域名证书，并将 `cert.pem` 和 `key.pem` 放置于 `static/` 目录下。
