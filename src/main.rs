@@ -87,6 +87,27 @@ use{
 ///     05.30.2026增加http/https以及端口自选
 #[actix_web::main]
 async fn main() -> io::Result<()> {
+
+    // 选择模式 (http / https)
+    let modes = vec!["http", "https"];
+    let mode_idx = Select::with_theme(&ColorfulTheme::default())
+        .with_prompt("请选择连接模式")
+        .items(&modes)
+        .default(1) // 默认选中 https
+        .interact()
+        .unwrap();
+    let selected_mode = modes[mode_idx];
+
+    // 输入端口 (空值自动转为 6790)
+    let port: u16 = Input::with_theme(&ColorfulTheme::default())
+        .with_prompt("请输入服务端口")
+        .default(6790) // 为空时的默认值
+        .interact_text()
+        .unwrap();
+
+    // 输出最终结果
+    println!("\n配置成功！服务地址为: {}://localhost{}", selected_mode, port);
+
     // 基础环境准备
     // 启动前调用 Python 生成/更新证书
     if let Err(e) = run_python_setup() {
