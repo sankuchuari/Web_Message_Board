@@ -113,8 +113,7 @@ async fn main() -> io::Result<()> {
         .unwrap();
 
     // 输出最终结果
-    println!("\n配置成功！服务地址为: {}://localhost{}", selected_mode, port);
-
+    println!("\n配置成功！服务地址为: {}://localhost:{}", selected_mode, port);
     // 基础环境准备
     //创建上传目录连接
     let _ = fs::create_dir_all("uploads");
