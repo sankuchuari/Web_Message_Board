@@ -109,10 +109,6 @@ async fn main() -> io::Result<()> {
     println!("\n配置成功！服务地址为: {}://localhost{}", selected_mode, port);
 
     // 基础环境准备
-    // 启动前调用 Python 生成/更新证书
-    if let Err(e) = run_python_setup() {
-        eprintln!("警告：自动生成证书失败: {}。尝试使用现有证书...", e);
-    }
     //创建上传目录连接
     let _ = fs::create_dir_all("uploads");
     //数据库检测与自动创建
