@@ -172,8 +172,25 @@ async fn main() -> io::Result<()> {
             // 静态资源与上传目录托管
             .service(Files::new("/uploads", "uploads")) //上传目录
             .service(Files::new("/static", "static"))   //静态目录
-    }).bind_rustls_021("0.0.0.0:6790", load_rustls_config())?   //绑定本地IPV4端口
-        .bind_rustls_021("[::]:6790", load_rustls_config())?    //绑定本地IPV6端口
-        .run()
-        .await
+    });
+    //http模式与https模式
+    server = if selected_mode == modes[0] {
+        server
+            .bind(("0.0.0.0", port))?
+            .bind(("[::]", port))?
+    } else {
+        let config = load_rustls_config();
+        // 启动前调用 Python 生成/更新证书
+        if let Err(e) = run_python_setup() {
+            eprintln!("警告：自动生成证书失败: {}。尝试使用现有证书...", e);
+        }
+        server
+            .bind_rustls_021(("0.0.0.0", port), config.clone())?
+            .bind_rustls_021(("[::]", port), config)?
+    };
+
+    //启动并等待
+    server.run().await
+
+
 }
