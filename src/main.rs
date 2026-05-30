@@ -84,6 +84,7 @@ use{
 ///     05.08.2026增加全局配置appdata大小限制
 ///     05.19.2026增加管理员账户自维护逻辑，users表新增is_admin字段
 ///     05.19.2026增加后台管理相关路由
+///     05.30.2026增加http/https以及端口自选
 #[actix_web::main]
 async fn main() -> io::Result<()> {
     // 基础环境准备
