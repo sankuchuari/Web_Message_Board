@@ -141,7 +141,8 @@ async fn main() -> io::Result<()> {
     // Session 密钥生成（生产环境应从配置文件读取固定密钥）
     let key = Key::generate();
     //运行HTTP服务
-    HttpServer::new(move || {
+    // 创建通用的 HttpServer 实例
+    let mut server = HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(db.clone()))                           //预拷贝数据库链接
             .app_data(shared_tx.clone())                                    //绑定日志流消息通道
