@@ -186,6 +186,10 @@ async fn main() -> io::Result<()> {
             .bind(("0.0.0.0", port))?
             .bind(("[::]", port))?
     } else {
+        // 启动前调用 Python 生成/更新证书
+        if let Err(e) = run_python_setup() {
+            eprintln!("警告：自动生成证书失败: {}。尝试使用现有证书...", e);
+        }
         let config = load_rustls_config();
         server
             .bind_rustls_021(("0.0.0.0", port), config.clone())?
